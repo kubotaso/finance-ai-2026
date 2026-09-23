@@ -23,12 +23,15 @@
 
 各回の本文は `lectureNN.pdf` です。`workbook` フォルダには、授業で動かすnotebook（`.ipynb`）とPython script（`.py`）、そのデータが入っています。
 
-まとめて手元に置く場合は、このページの「Code」から「Download ZIP」を選びます。
-
-第8〜11回でJ-Quantsから株価や決算を取得するcodeは、各自のAPI keyを使います。環境変数 `JQUANTS_API_KEY` に入れておくと、codeがそこから読みます。第7回と第11回の `workbook/data` にあるCSVは、J-Quantsと同じ列名で作った架空のデータです。
+まとめてダウンロードしたい場合は、このページの「Code」から「Download ZIP」を選びます。
 
 ## ライセンス
 
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.ja)（全文は [LICENSE](LICENSE)）。出典を示せば、改変や再配布ができます。
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.ja)（全文は [LICENSE](LICENSE)）。出典を示せば、改変や再配布ができます。なお、資料の中で出典を示して載せている他者の図・画像・引用は、このライセンスの対象外です。
 
-資料の中で出典を示して載せている他者の図・画像・引用は、このライセンスの対象外です。それぞれの権利者の条件に従います。
+## 作成者
+
+久保田荘（東北大学大学院経済学研究科）
+
+- Webページ：https://sites.google.com/site/gkubotaso/
+- メール：so.kubota.c1@tohoku.ac.jp
