@@ -1,0 +1,34 @@
+# 金融論 2026 講義資料
+
+東北大学経済学部、2026年秋学期「金融論」の講義資料を置いてあります。
+
+## 内容
+
+| フォルダ | 回 | 内容 |
+|---|---|---|
+| `lecture01` | 第1回 | 金融論：AIを「部下」として使う（スライド、AIが作成した論文例） |
+| `HW01` | 課題1 | Codexを使い始める手順書（Mac用・Windows用）、模擬教科書 第10章 |
+| `lecture04` | 第4回 | PCの作業場所を理解し、Codexで編集する |
+| `lecture05` | 第5回 | Markdownで原稿を組み立て、Word・PDF・slideへ変換する |
+| `lecture06` | 第6回 | Python I：Jupyter、基本文法と現在価値 |
+| `lecture07` | 第7回 | Python II：CSV、pandas、plot |
+| `lecture08` | 第8回 | 株式市場・株価の決まり方とJ-Quants |
+| `lecture09` | 第9回 | 企業の資金調達・財務三表とJ-Quantsの決算取得 |
+| `lecture10` | 第10回 | 財務指標と市場評価：ROE・PBR・PER・デュポン分解 |
+| `lecture11` | 第11回 | Python III：企業データを結び、PBRとROEを比べる |
+
+第2回はon-demand videoの回、第3回は外部登壇者の講義のため、資料はありません。第12回以降は、授業の進行に合わせて追加します。
+
+## 使い方
+
+各回の本文は `lectureNN.pdf` です。`workbook` フォルダには、授業で動かすnotebook（`.ipynb`）とPython script（`.py`）、そのデータが入っています。
+
+まとめて手元に置く場合は、このページの「Code」から「Download ZIP」を選びます。
+
+第8〜11回でJ-Quantsから株価や決算を取得するcodeは、各自のAPI keyを使います。環境変数 `JQUANTS_API_KEY` に入れておくと、codeがそこから読みます。第7回と第11回の `workbook/data` にあるCSVは、J-Quantsと同じ列名で作った架空のデータです。
+
+## ライセンス
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.ja)（全文は [LICENSE](LICENSE)）。出典を示せば、改変や再配布ができます。
+
+資料の中で出典を示して載せている他者の図・画像・引用は、このライセンスの対象外です。それぞれの権利者の条件に従います。

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.11" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="久保田荘" />
+  <title>日米の短期市場金利：2015年から2026年まで</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">日米の短期市場金利：2015年から2026年まで</h1>
+<p class="subtitle">Markdownの記法サンプル</p>
+<p class="author">久保田荘</p>
+<p class="date">2026年10月15日</p>
+</header>
+<h1 id="要約">要約</h1>
+<p>2015年から2026年までの日米の短期市場金利を並べると、動き方がまったく違います。米国は2022年から急に上げて2023年に5.33%まで行き、そこから下げました。日本は8年間マイナス圏にとどまり、2024年3月にプラスに戻ってから、ゆっくり1%近くまで上がりました。</p>
+<p>この文書は<a
+href="../lecture05.md">第5回の資料</a>で出てくる記法を一通り使ったサンプルです。中身よりも、<strong>記号がどう書かれているか</strong>を見てください。<code>report.md</code>
+をVS Codeで開いて、プレビュー（⇧⌘V）と並べると対応が分かります。</p>
+<h1 id="背景">背景</h1>
+<h2 id="政策金利とは">政策金利とは</h2>
+<p>政策金利は、中央銀行が誘導目標として決める短期金利です<a href="#fn1"
+class="footnote-ref" id="fnref1"
+role="doc-noteref"><sup>1</sup></a>。日本は無担保コール翌日物、米国はFederal
+Funds Rate（FF金利）を指します。</p>
+<p>日本銀行法は、第2条で金融政策の理念をこう定めています。</p>
+<blockquote>
+<p>日本銀行は、通貨及び金融の調節を行うに当たっては、物価の安定を図ることを通じて国民経済の健全な発展に資することをもって、その理念とする。</p>
+</blockquote>
+<h2 id="見る期間">見る期間</h2>
+<p>2015年1月から2026年8月までの月次dataを使います。全部で140か月分です。</p>
+<h1 id="data">data</h1>
+<h2 id="出所">出所</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>系列</th>
+<th>定義</th>
+<th>出所</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>jp_policy_rate</code></td>
+<td>無担保コール翌日物（月平均）</td>
+<td>日本銀行 主要時系列統計データ表 FM02</td>
+</tr>
+<tr>
+<td><code>us_policy_rate</code></td>
+<td>Federal Funds Rate（実効、月平均）</td>
+<td>FRED <code>FEDFUNDS</code>（Federal Reserve）</td>
+</tr>
+</tbody>
+</table>
+<p>file は <code>data/policy_rates.csv</code>
+です。先頭はこうなっています。</p>
+<pre><code>date,jp_policy_rate,us_policy_rate
+2015-01-01,0.0740,0.1100
+2015-02-01,0.0760,0.1100
+2015-03-01,0.0750,0.1100</code></pre>
+<h2 id="図を作る">図を作る</h2>
+<p>図は <code>make_figure.py</code> で作ります。</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> pd.read_csv(<span class="st">&quot;data/policy_rates.csv&quot;</span>, index_col<span class="op">=</span><span class="st">&quot;date&quot;</span>, parse_dates<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="fl">4.2</span>))</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>ax.plot(d.index, d[<span class="st">&quot;us_policy_rate&quot;</span>], label<span class="op">=</span><span class="st">&quot;米国（FF金利）&quot;</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>ax.plot(d.index, d[<span class="st">&quot;jp_policy_rate&quot;</span>], label<span class="op">=</span><span class="st">&quot;日本（無担保コールO/N）&quot;</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>fig.savefig(<span class="st">&quot;figures/fig01_policy_rates.png&quot;</span>, dpi<span class="op">=</span><span class="dv">160</span>)</span></code></pre></div>
+<p>実行するとこうなります。</p>
+<pre><code>$ python make_figure.py
+wrote figures/fig01_policy_rates.png</code></pre>
+<h1 id="分析">分析</h1>
+<figure>
+<img src="figures/fig01_policy_rates.png"
+alt="図1　日米の短期市場金利（月平均、2015年1月〜2026年8月）" />
+<figcaption
+aria-hidden="true">図1　日米の短期市場金利（月平均、2015年1月〜2026年8月）</figcaption>
+</figure>
+<h2 id="米国">米国</h2>
+<p>米国は2022年3月まで0.2%でした。そこから1年半で5.33%（2023年8月）まで上げています。その後は下げに転じ、直近の2026年8月は3.63%です。</p>
+<p>上げ幅を月あたりで見ると、</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><mn>5.33</mn><mo>−</mo><mn>0.20</mn></mrow><mn>17</mn></mfrac><mo>≈</mo><mn>0.30</mn></mrow><annotation encoding="application/x-tex">
+\frac{5.33 - 0.20}{17} \approx 0.30
+</annotation></semantics></math></p>
+<p>で、平均して月0.3%ポイントのペースでした。</p>
+<h2 id="日本">日本</h2>
+<p>日本は2016年3月に初めてマイナスになり、2024年2月まで8年間マイナス圏にとどまりました。最も低かったのは2018年6月の
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mn>0.071</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">-0.071\%</annotation></semantics></math>
+です。</p>
+<p>2024年3月にプラスへ戻り（0.022%）、そこから段階的に上がって、2026年7月は0.978%になっています。</p>
+<h2 id="差">差</h2>
+<p>金利差
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>s</mi><mi>t</mi></msub><annotation encoding="application/x-tex">s_t</annotation></semantics></math>
+を次のように定義します。</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>s</mi><mi>t</mi></msub><mo>=</mo><msubsup><mi>i</mi><mi>t</mi><mrow><mi>U</mi><mi>S</mi></mrow></msubsup><mo>−</mo><msubsup><mi>i</mi><mi>t</mi><mrow><mi>J</mi><mi>P</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">
+s_t = i^{US}_t - i^{JP}_t
+</annotation></semantics></math></p>
+<p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>i</mi><mi>t</mi><mrow><mi>U</mi><mi>S</mi></mrow></msubsup><annotation encoding="application/x-tex">i^{US}_t</annotation></semantics></math>
+が米国、<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>i</mi><mi>t</mi><mrow><mi>J</mi><mi>P</mi></mrow></msubsup><annotation encoding="application/x-tex">i^{JP}_t</annotation></semantics></math>
+が日本の政策金利です。この差は2023年に5%ポイントを超え、2026年時点では2.7%ポイント前後まで縮まっています。</p>
+<p>主な出来事を並べると次のようになります。</p>
+<ol type="1">
+<li>2016年3月　日本がマイナス金利に入る</li>
+<li>2022年3月　米国が利上げを始める</li>
+<li>2023年8月　米国がピーク（5.33%）</li>
+<li>2024年3月　日本がマイナス金利を解除</li>
+</ol>
+<h1 id="結論">結論</h1>
+<ul>
+<li>同じ期間でも、日米で金利の水準と動き方が違います。</li>
+<li>日本のマイナス金利は8年続きました。</li>
+<li>金利差は2023年に最も開き、その後縮まっています。</li>
+</ul>
+<p>この結論は記法サンプル用に短く書いています。課題の原稿では、差が開いた理由と、それが何に効いたかまで書きます。</p>
+<hr />
+<h1 id="references">references</h1>
+<ul>
+<li>日本銀行「主要時系列統計データ表」FM02（無担保コールレート）</li>
+<li>Federal Reserve Bank of St. Louis, FRED, <a
+href="https://fred.stlouisfed.org/series/FEDFUNDS"><code>FEDFUNDS</code></a></li>
+<li>日本銀行法（平成9年法律第89号）</li>
+</ul>
+<h1 id="この原稿で使った記法">この原稿で使った記法</h1>
+<table>
+<thead>
+<tr>
+<th>記法</th>
+<th>使った場所</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>見出し <code>#</code> <code>##</code></td>
+<td>全体</td>
+</tr>
+<tr>
+<td>強調 <code>**</code></td>
+<td>「要約」の第2段落</td>
+</tr>
+<tr>
+<td>箇条書き <code>-</code></td>
+<td>「結論」</td>
+</tr>
+<tr>
+<td>番号付き <code>1.</code></td>
+<td>「差」の出来事の一覧</td>
+</tr>
+<tr>
+<td>link <code>[]()</code></td>
+<td>「要約」と「references」</td>
+</tr>
+<tr>
+<td>画像 <code>![]()</code></td>
+<td>「分析」の図1</td>
+</tr>
+<tr>
+<td>引用 <code>&gt;</code></td>
+<td>「政策金利とは」の日本銀行法</td>
+</tr>
+<tr>
+<td>文中のcode</td>
+<td><code>jp_policy_rate</code> など</td>
+</tr>
+<tr>
+<td>code block</td>
+<td>「data」のCSVとPython</td>
+</tr>
+<tr>
+<td>脚注 <code>[^1]</code></td>
+<td>「政策金利とは」</td>
+</tr>
+<tr>
+<td>表</td>
+<td>「出所」とこの表</td>
+</tr>
+<tr>
+<td>区切り線 <code>---</code></td>
+<td>「references」の前</td>
+</tr>
+<tr>
+<td>文中の数式 <code>$...$</code></td>
+<td>「日本」「差」</td>
+</tr>
+<tr>
+<td>独立行の数式 <code>$$...$$</code></td>
+<td>「米国」「差」</td>
+</tr>
+<tr>
+<td>front matter</td>
+<td>fileの先頭</td>
+</tr>
+</tbody>
+</table>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li
+id="fn1"><p>配布CSVは誘導目標ではなく、日本の無担保コール翌日物市場金利と米国の実効FF金利の月平均です。出所と単位は下のdata表に示します。<a
+href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>

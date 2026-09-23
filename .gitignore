@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+Icon?
+
+# Chat logs
+chat_log.md
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# LaTeX intermediate files
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+
+# Temporary files
+*.tmp.pdf
+~$*
