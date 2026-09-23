@@ -7,7 +7,7 @@
 | フォルダ | 回 | 内容 |
 |---|---|---|
 | `lecture01` | 第1回 | 金融論：AIを「部下」として使う（スライド、AIが作成した論文例） |
-| `HW01` | 課題1 | Codexを使い始める手順書（Mac用・Windows用）、模擬教科書 第10章 |
+| `HW01` | 課題1 | Codexを使い始める手順書（Mac用・Windows用、MarkdownとPDF）、模擬教科書 第10章 |
 | `lecture04` | 第4回 | PCの作業場所を理解し、Codexで編集する |
 | `lecture05` | 第5回 | Markdownで原稿を組み立て、Word・PDF・slideへ変換する |
 | `lecture06` | 第6回 | Python I：Jupyter、基本文法と現在価値 |
