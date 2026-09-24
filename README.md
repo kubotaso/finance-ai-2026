@@ -21,7 +21,7 @@
 
 ## 使い方
 
-各回の本文は `lectureNN.pdf` です。`workbook` フォルダには、授業で動かすnotebook（`.ipynb`）とPython script（`.py`）、そのデータが入っています。
+各回の本文は `lectureNN.pdf` です。第4回以降は、同じ内容のMarkdown（`lectureNN.md`）も置いてあり、GitHub上でそのまま読めます。`workbook` フォルダには、授業で動かすnotebook（`.ipynb`）とPython script（`.py`）、そのデータが入っています。
 
 まとめてダウンロードしたい場合は、このページの「Code」から「Download ZIP」を選びます。
 
