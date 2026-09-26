@@ -390,7 +390,7 @@ VS Codeで手作業した内容は、保存するとdisk上のfileに反映さ�
 
 ```text
 chapter10_report.mdの「マネーストック」の段落だけを、
-moc_text_claude.pdfと照合して。
+moc_text.pdfと照合して。
 食い違う文があれば、根拠のpageと修正案を示して。
 まだfileは変更しないで。
 ```
