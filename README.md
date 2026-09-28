@@ -19,8 +19,6 @@
 
 講義内容は、今後随時更新されます。第2回はon-demand videoの回になります。
 
-2026年9月28日に、第3回の中止に合わせて、第4回以降を1回ずつ前へ詰めました。フォルダ名も1つずつ小さくなっています（旧 `lecture04`〜`lecture11` → 新 `lecture03`〜`lecture10`）。以前のリンクで開いたフォルダは、別の回の資料を表示します。
-
 ## 使い方
 
 各回の本文は `lectureNN.pdf` です。第3回以降は、同じ内容のMarkdown（`lectureNN.md`）も置いてあり、GitHub上でそのまま読めます。`workbook` フォルダには、授業で動かすnotebook（`.ipynb`）とPython script（`.py`）、そのデータが入っています。
