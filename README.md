@@ -7,27 +7,29 @@
 | フォルダ | 回 | 内容 |
 |---|---|---|
 | `lecture01` | 第1回 | 金融論：AIを「部下」として使う（スライド、AIが作成した論文例） |
-| `HW01` | 課題1 | Codexを使い始める手順書。動画：[Mac版](https://youtu.be/WBNtSK9K48w)、[Windows版](https://youtu.be/NrwnH4Avhnc) |
-| `lecture04` | 第4回 | PCの作業場所を理解し、Codexで編集する |
-| `lecture05` | 第5回 | Markdownで原稿を組み立て、Word・PDF・slideへ変換する |
-| `lecture06` | 第6回 | Python I：Jupyter、基本文法と現在価値 |
-| `lecture07` | 第7回 | Python II：CSV、pandas、plot |
-| `lecture08` | 第8回 | 株式市場・株価の決まり方とJ-Quants |
-| `lecture09` | 第9回 | 企業の資金調達・財務三表とJ-Quantsの決算取得 |
-| `lecture10` | 第10回 | 財務指標と市場評価：ROE・PBR・PER・デュポン分解 |
-| `lecture11` | 第11回 | Python III：企業データを結び、PBRとROEを比べる |
+| `HW01` | 第2回・課題1 | Codex & VS code入門。動画：[Mac版](https://youtu.be/WBNtSK9K48w)、[Windows版](https://youtu.be/NrwnH4Avhnc) |
+| `lecture03` | 第3回 | PCの作業場所を理解し、Codexで編集する |
+| `lecture04` | 第4回 | Markdownで原稿を組み立て、Word・PDF・slideへ変換する |
+| `lecture05` | 第5回 | Python I：Jupyter、基本文法と現在価値 |
+| `lecture06` | 第6回 | Python II：CSV、pandas、plot |
+| `lecture07` | 第7回 | 株式市場・株価の決まり方とJ-Quants |
+| `lecture08` | 第8回 | 企業の資金調達・財務三表とJ-Quantsの決算取得 |
+| `lecture09` | 第9回 | 財務指標と市場評価：ROE・PBR・PER・デュポン分解 |
+| `lecture10` | 第10回 | Python III：企業データを結び、PBRとROEを比べる |
 
-講義内容は、今後随時追加されます。第2回はon-demand videoの回、第3回は外部登壇者の講義のため、資料はありません。
+講義内容は、今後随時更新されます。第2回はon-demand videoの回のため、資料はありません。
+
+2026年9月28日に、第3回の中止に合わせて、第4回以降を1回ずつ前へ詰めました。フォルダ名も1つずつ小さくなっています（旧 `lecture04`〜`lecture11` → 新 `lecture03`〜`lecture10`）。以前のリンクで開いたフォルダは、別の回の資料を表示します。
 
 ## 使い方
 
-各回の本文は `lectureNN.pdf` です。第4回以降は、同じ内容のMarkdown（`lectureNN.md`）も置いてあり、GitHub上でそのまま読めます。`workbook` フォルダには、授業で動かすnotebook（`.ipynb`）とPython script（`.py`）、そのデータが入っています。
+各回の本文は `lectureNN.pdf` です。第3回以降は、同じ内容のMarkdown（`lectureNN.md`）も置いてあり、GitHub上でそのまま読めます。`workbook` フォルダには、授業で動かすnotebook（`.ipynb`）とPython script（`.py`）、そのデータが入っています。
 
 まとめてダウンロードしたい場合は、このページの「Code」から「Download ZIP」を選びます。
 
 ## この講義について
 
-本講義は、AIをフル活用する実験的な授業です。学生はCodexなどのAIエージェントを「部下」として使い、データの取得、分析、作図から、スライド作成、論文執筆までを行う技術を学びます。金融については、あくまでAIの活用事例として扱います。AIが大学での学習内容について学生をはるかに超えた現在、これまで通りに学生に知識を与えて期末試験を解かせたところで、AIに代替される人材を育てるだけなのではないかという問題意識があります。AIを受け入れて、人間として補完性を発揮できることがテーマです。同じような授業を考えている方の参考になればと思い、公開しています。
+本講義は、AIをフル活用する実験的な授業です。学生はCodexなどのAIエージェントを「部下」として使い、データの取得、分析、作図から、スライド作成、論文執筆までを行う技術を学びます。金融については、あくまでAIの活用事例として扱います。AIが大学での学習内容について学生をはるかに超えた現在、これまで通りの知識を与えて期末試験でチェックするような講義をしても、AIに代替される人材を育てるだけなのではないかという問題意識があります。AIを受け入れて、人間として補完性を発揮できることがテーマです。同じような授業を考えている方の参考になればと思い、公開しています。
 
 ## 作成者
 

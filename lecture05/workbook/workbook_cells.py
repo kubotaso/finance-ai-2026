@@ -1,5 +1,5 @@
 # %% [markdown]
-# # 第6回 ワークブック
+# # 第5回 ワークブック
 #
 # Python I：script・対話モード・notebook、基本文法と現在価値
 #

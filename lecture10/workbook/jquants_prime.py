@@ -1,4 +1,4 @@
-"""第11回 実データのサンプル: J-Quants APIから東証プライム非金融企業のPBRとROEを作り、図にする。
+"""第10回 実データのサンプル: J-Quants APIから東証プライム非金融企業のPBRとROEを作り、図にする。
 
 workbook/ folderで実行します:
     python jquants_prime.py

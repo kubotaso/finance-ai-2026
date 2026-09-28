@@ -1,249 +1,259 @@
-"""第10回ワークブック：架空の数字で指標の式を確かめ、トヨタ自動車の決算と株価で計算する。
+"""第10回ワークブック：架空の企業表を結合し、指標を作り、業種別に集計して図にする。
 
 workbook/ folderで実行します:
     python workbook.py
 
-1節は架空の数字だけで、API keyは要りません。2節でJ-Quants APIからトヨタ自動車の決算サマリーと株価を
-取得します。取得のcodeは第8回・第9回と同じ形で、このfileの2-0に書いてあります。実行するたびに
-APIから取り直します。取得したデータは、そのままの形で他の人に配布しません。
+data/ の表はすべて架空のデータで、列名はJ-Quants APIと同じです。API keyは要りません。
+5節では、2〜4節で1つずつ確かめた処理を、このfileの中で2つの関数にまとめます。
 """
 
+# ------------------------------------------------------------
+# 1-1 型と欠損を確かめる
+
 import pandas as pd
+import matplotlib.pyplot as plt
+
+prices = pd.read_csv("data/prices.csv", dtype={"Code": str}, parse_dates=["Date"])
+print(prices.shape)
+print(prices.dtypes)
+print(prices.isna().sum())
 
 # ------------------------------------------------------------
-# 1-1 時価総額、BPS、PBR
+# 1-2 ifと、列に対する条件
 
-price = 1000            # 株価（円）
-shares = 1_000_000      # 株数（株）
-equity = 500_000_000    # 自己資本（円）
+close = 3958
+if close > 3000:
+    print("3,000円より高い")
 
-market_cap = price * shares
-bps = equity / shares
-
-print("時価総額:", market_cap)
-print("BPS:", bps)
-print("PBR（時価総額 / 自己資本）:", market_cap / equity)
-print("PBR（株価 / BPS）:", price / bps)
+high = prices["C"] > 3000
+print(high.head(3))
+print("3,000円より高い行の数:", high.sum())
+print(prices[high].head(3))
 
 # ------------------------------------------------------------
-# 1-2 株式分割
+# 2-1 株価と企業情報を結ぶ
 
-split = 2
-price_after = price / split
-shares_after = shares * split
-bps_after = equity / shares_after
+master = pd.read_csv("data/master.csv", dtype={"Code": str})
+short = prices[prices["Date"].between("2024-08-01", "2024-08-05")][["Date", "Code", "C"]]
 
-print("分割後の株価:", price_after)
-print("分割後のBPS:", bps_after)
-print("分割後の株価 / 分割後のBPS:", price_after / bps_after)
-print("分割後の株価 / 分割前のBPS:", price_after / bps)
+merged = short.merge(master, on="Code", how="left")
+print("結合前:", len(short), "行 結合後:", len(merged), "行")
+print(merged)
 
-# ------------------------------------------------------------
-# 1-3 ROEと自己資本の大きさ
-
-net_income = 50_000_000
-print("ROE:", net_income / equity)
-
-equity_small = 250_000_000
-print("自己資本が半分のときのROE:", net_income / equity_small)
+print("master の行数:", len(master), " 銘柄コードの種類:", master["Code"].nunique())
+print(master[master["Code"].duplicated(keep=False)])
 
 # ------------------------------------------------------------
-# 1-4 デュポン分解
+# 2-2 validateで重複を止める
 
-sales = 1_000_000_000
-total_assets = 1_000_000_000
+master_u = master.drop_duplicates()
+print("重複を除いた master:", len(master_u), "行")
 
-margin = net_income / sales             # 売上高純利益率
-turnover = sales / total_assets         # 総資産回転率
-leverage = total_assets / equity        # 財務レバレッジ
-
-print("売上高純利益率:", margin)
-print("総資産回転率:", turnover)
-print("財務レバレッジ:", leverage)
-print("自己資本比率:", equity / total_assets)
-print("3つの積:", margin * turnover * leverage)
-print("直接計算したROE:", net_income / equity)
+merged = short.merge(master_u, on="Code", how="left", validate="many_to_one")
+print("結合後:", len(merged), "行")
 
 # ------------------------------------------------------------
-# 1-5 期末・期首・平均の自己資本
+# 2-3 通期決算を選び、訂正開示をそろえる
 
-equity_begin = 470_000_000
-equity_avg = (equity_begin + equity) / 2
+fins = pd.read_csv("data/fins.csv", dtype={"Code": str}, parse_dates=["DiscDate", "CurPerEn"])
+print("fins:", len(fins), "行")
 
-print("期末の自己資本で割ったROE:", net_income / equity)
-print("期首の自己資本で割ったROE:", net_income / equity_begin)
-print("平均の自己資本で割ったROE:", net_income / equity_avg)
-
-# ------------------------------------------------------------
-# 1-6 EPS・DPSと、PER・PBR・配当利回り
-
-dividends = 20_000_000
-
-eps = net_income / shares      # 1株当たり純利益
-dps = dividends / shares       # 1株当たり配当
-per = price / eps
-pbr = price / bps
-dividend_yield = dps / price
-
-print("EPS:", eps, " DPS:", dps)
-print("PER:", per, " PBR:", pbr, " 配当利回り:", dividend_yield)
-
-# ------------------------------------------------------------
-# 1-7 PBR＝PER×ROE
-
-roe_end = net_income / equity
-
-print("PER × ROE（期末の自己資本）:", per * roe_end)
-print("PBR:", pbr)
-print("PER × ROE（平均の自己資本）:", per * net_income / equity_avg)
-
-# ------------------------------------------------------------
-# 1-8 割引率が違えばPBRも違う
-
-def pbr_no_growth(roe, k, payout=1.0):
-    """利益が毎年同じで、割合payoutを配当する場合のPBR（PER = payout / k）"""
-    return payout / k * roe
-
-print("A社 ROE 10%、k 5%:", round(pbr_no_growth(0.10, 0.05), 2))
-print("B社 ROE 15%、k 10%:", round(pbr_no_growth(0.15, 0.10), 2))
-
-# ------------------------------------------------------------
-# 2-0 J-Quants APIから取得する準備
-# ------------------------------------------------------------
-# 第8回の toyota_oct2025.py 、第9回の6節と同じ仕組みです。URLに条件を付けて送ると、JSONが返ってきます。
-# その "data" の中身（1行が1つの辞書）をDataFrameにします。
-# API keyは、環境変数 JQUANTS_API_KEY にあればそれを使い、なければ最初の取得のときに
-# 非表示の入力欄で受け取ります。このfileにも出力にも書き込みません。
-# 実行するたびにAPIから取り直します。開示が追加・訂正されていれば、行や数値が前回と変わります。
-# 取得したデータは、J-Quantsの利用条件により、そのままの形で他の人に配布しません。
-#
-# 応答が200以外のとき fetch は「HTTP 4xx」で止まります。よくある原因は次のとおりです。
-#   400  銘柄コード・日付・取得できる期間（Freeプランは12週間前まで）が違う
-#   401  API keyが違う
-#   403  このプランでは取れないデータか期間
-#   429  回数制限。Freeプランは1分に5回まで。少し待ってからやり直す
-#
-# 行を選んで Shift+Enter で使うときは、先に下の import と BASE・api_key の行を送り、
-# 次に def の行から関数の終わりまでをまとめて送ります。関数の中の数行だけを送ると SyntaxError になります。
-# 1行が長かったり、複数の関数を一度に選んだりすると、terminalの行編集が途中で崩れることがあります。
-# 一度送った定義はそのterminalを閉じるまで残るので、以後は fetch(...) の行だけを送れば済みます。
-import os
-from getpass import getpass
-
-import requests
-
-BASE = "https://api.jquants.com/v2"
-api_key = os.environ.get("JQUANTS_API_KEY", "")
-
-
-def fetch(endpoint, params):
-    """J-Quants API V2に条件を送り、返ってきた全行をDataFrameにする。"""
-    global api_key
-    if not api_key:
-        api_key = getpass("J-Quants API key: ").strip()
-    params = dict(params)
-    rows = []
-    while True:
-        r = requests.get(BASE + endpoint, params=params,
-                         headers={"x-api-key": api_key}, timeout=30)
-        if r.status_code != 200:
-            raise RuntimeError(f"HTTP {r.status_code}")
-        payload = r.json()
-        rows.extend(payload["data"])
-        cursor = payload.get("pagination_key")
-        if not cursor:
-            break
-        params["pagination_key"] = cursor
-    if not rows:
-        raise RuntimeError("0件です。銘柄・期間を確認します。")
-    return pd.DataFrame(rows)
-
-# ------------------------------------------------------------
-# 2-1 決算サマリーと株価を読み込む
-# ------------------------------------------------------------
-# /fins/summary は決算短信のサマリー（開示1回 = 1行）、/equities/bars/daily は日次の株価です。
-# 銘柄コードは証券コード7203の末尾に0を付けた5桁です。株価は評価日を含む2026年6月の分だけ取ります。
-code = "72030"
-fins = fetch("/fins/summary", {"code": code})
-daily = fetch("/equities/bars/daily",
-              {"code": code, "from": "2026-06-01", "to": "2026-06-19"})
-
-# 読んだ直後はすべて文字列なので、使う列を日付型と数値型に直す（第7回・第9回と同じ手順）
-for col in ["DiscDate", "CurPerEn", "CurFYEn"]:
-    fins[col] = pd.to_datetime(fins[col], errors="coerce")
-for col in ["Sales", "NP", "TA", "Eq", "ShEq", "EqAR", "EPS", "BPS", "DivAnn", "ShOutFY", "TrShFY", "ROE"]:
-    fins[col] = pd.to_numeric(fins[col], errors="coerce")
-fins = fins.sort_values(["DiscDate", "CurPerEn"]).reset_index(drop=True)
-daily["Date"] = pd.to_datetime(daily["Date"])
-for col in ["C", "AdjFactor", "AdjC"]:
-    daily[col] = pd.to_numeric(daily[col], errors="coerce")
-
-print(fins[["DiscDate", "DocType", "CurPerType", "CurPerEn", "CurFYEn"]])
-# 1行が1回の開示。四半期（1Q〜3Q）と通期（FY）が混ざっている。金額の列は円単位。
-
-# ------------------------------------------------------------
-# 2-2 通期の行を選ぶ
-# ------------------------------------------------------------
-# 通期（FY）・連結（Consolidated）の決算短信で、評価日2026-06-19までに開示された行を残す。
-# 同じ決算期の開示が2回以上あれば（訂正など）、最後の開示を使う。第11回で同じ手順を多くの会社に広げる。
-eval_date = "2026-06-19"
 fy = fins[(fins["CurPerType"] == "FY")
-          & fins["DocType"].str.startswith("FYFinancialStatements_Consolidated_")
-          & (fins["DiscDate"] <= eval_date)]
-fy = fy.sort_values(["CurPerEn", "DiscDate"]).drop_duplicates("CurPerEn", keep="last")
-print(fy[["DiscDate", "CurFYEn", "DocType", "Sales", "NP", "TA", "Eq", "ShEq", "EPS", "BPS", "DivAnn"]])
-# 2025年3月期と2026年3月期の2行。NP は親会社の所有者に帰属する当期利益、Eq は純資産、ShEq は自己資本。
+          & fins["DocType"].str.startswith("FYFinancialStatements")
+          & (fins["CurPerEn"] == "2025-03-31")
+          & (fins["DiscDate"] <= "2025-06-30")]
+print("条件に合う行:", len(fy), " 銘柄:", fy["Code"].nunique())
+print(fy["Code"].value_counts().head(3))
+
+print(fy.loc[fy["Code"] == "05550", ["DiscDate", "Code", "NP", "ShEq", "BPS"]])
+
+fy = fy.sort_values(["Code", "DiscDate"]).drop_duplicates("Code", keep="last")
+print("銘柄ごとに最後の開示だけ残した行:", len(fy))
 
 # ------------------------------------------------------------
-# 2-3 評価日の株価
+# 2-4 3つの表を結合し、行数を記録する
 
-day = daily[daily["Date"] == "2026-06-19"]
-price = float(day["C"].iloc[0])
-print(day[["Date", "Code", "C", "AdjFactor", "AdjC"]])
+daily = pd.read_csv("data/daily_2025-06-30.csv", dtype={"Code": str}, parse_dates=["Date"])
 
-# ------------------------------------------------------------
-# 2-4 自己資本とBPSの定義を確かめる
+counts = []
+counts.append({"step": "master（重複を除く）", "rows": len(master_u)})
+counts.append({"step": "通期決算（銘柄ごとに1行）", "rows": len(fy)})
 
-if len(fy) < 2: raise ValueError("評価日までの連結通期が2期必要です")
-cur, prev = fy.iloc[-1], fy.iloc[-2]
-print(cur[["Code","CurPerEn","DiscDate","DocType"]])
+panel = master_u.merge(fy, on="Code", how="left", validate="one_to_one")
+counts.append({"step": "master と決算（left）", "rows": len(panel)})
 
-shares = cur["ShOutFY"] - cur["TrShFY"]     # 期末発行済株式数 - 期末自己株式数
-print("株数:", shares)
-print("BPS（決算短信）:", cur["BPS"])
-print("ShEq / 株数:", round(cur["ShEq"] / shares, 2))
-print("Eq / 株数:", round(cur["Eq"] / shares, 2))
+panel = panel.merge(daily[["Code", "C"]], on="Code", how="left", validate="one_to_one")
+counts.append({"step": "株価を結合（left）", "rows": len(panel)})
+
+print(pd.DataFrame(counts))
 
 # ------------------------------------------------------------
-# 2-5 ROEとデュポン分解
+# 3-1 列をまとめて計算する
 
-net_income = cur["NP"]
-sales = cur["Sales"]
-total_assets = cur["TA"]
-equity = cur["ShEq"]
-equity_prev = prev["ShEq"]
+panel["Shares"] = panel["ShOutFY"] - panel["TrShFY"]
+panel["MV"] = panel["C"] * panel["Shares"]
+panel["PBR"] = panel["MV"] / panel["ShEq"]
+panel["ROE"] = panel["NP"] / panel["ShEq"]
+panel["PBR_BPS"] = panel["C"] / panel["BPS"]
 
-margin = net_income / sales
-turnover = sales / total_assets
-leverage = total_assets / equity
-
-print("売上高純利益率:", round(margin, 4))
-print("総資産回転率:", round(turnover, 4))
-print("財務レバレッジ:", round(leverage, 4))
-print("3つの積:", round(margin * turnover * leverage, 4))
-print("ROE（期末の自己資本）:", round(net_income / equity, 4))
-print("ROE（平均の自己資本）:", round(net_income / ((equity_prev + equity) / 2), 4))
-print("ROE（決算サマリーの列）:", cur["ROE"])
+print(panel[["Code", "CoName", "C", "NP", "ShEq", "PBR", "PBR_BPS", "ROE"]])
 
 # ------------------------------------------------------------
-# 2-6 PER・PBR・配当利回り
+# 3-2 標本の条件を1つずつ足す
 
-per = price / cur["EPS"] if pd.notna(cur["EPS"]) and cur["EPS"] > 0 else float("nan")
-pbr = price * shares / cur["ShEq"] if cur["ShEq"] > 0 and shares > 0 else float("nan")
-dividend_yield = cur["DivAnn"] / price
-roe_end = net_income / equity
+financial = ["銀行業", "証券、商品先物取引業", "保険業", "その他金融業"]
+steps = [
+    ("プライム", panel["MktNm"] == "プライム"),
+    ("金融業を除く", ~panel["S33Nm"].isin(financial)),
+    ("通期決算がある", panel["NP"].notna() & panel["ShEq"].notna()),
+    ("自己資本が正", panel["ShEq"] > 0),
+]
+keep = pd.Series(True, index=panel.index)
+for step, condition in steps:
+    keep = keep & condition
+    counts.append({"step": step, "rows": int(keep.sum())})
 
-print("PER:", round(per, 2))
-print("PBR:", round(pbr, 4))
-print("配当利回り:", round(dividend_yield, 4))
-print("PER × ROE（期末）:", round(per * roe_end, 4))
+print(pd.DataFrame(counts))
+
+print(panel.loc[panel["ShEq"] <= 0, ["Code", "CoName", "NP", "ShEq", "ROE", "PBR"]])
+
+# ------------------------------------------------------------
+# 3-3 欠損を0で埋めない
+
+kept = panel[keep]
+print("社数:", len(kept), " PBRがある社数:", kept["PBR"].notna().sum())
+print("PBRの中央値（欠損を除く）:", round(kept["PBR"].median(), 3))
+print("PBRの中央値（欠損を0で埋める）:", round(kept["PBR"].fillna(0).median(), 3))
+print(kept.loc[kept["PBR"].isna(), ["Code", "CoName", "C", "PBR"]])
+
+sample = kept[kept["PBR"].notna()].copy()
+counts.append({"step": "評価日の株価がある", "rows": len(sample)})
+print(pd.DataFrame(counts))
+
+# ------------------------------------------------------------
+# 3-4 業種別に集計する
+
+by_industry = (sample.groupby("S33Nm")
+               .agg(n=("Code", "count"),
+                    PBR_mean=("PBR", "mean"), PBR_median=("PBR", "median"),
+                    ROE_mean=("ROE", "mean"), ROE_median=("ROE", "median"))
+               .reset_index())
+print(by_industry.round(3))
+
+# ------------------------------------------------------------
+# 4-1 分布を見る
+
+fig, ax = plt.subplots(figsize=(6, 3.5))
+ax.hist(sample["PBR"], bins=20, color="#2a78d6", edgecolor="white")
+ax.set_xlabel("PBR (times)")
+ax.set_ylabel("Number of firms")
+ax.set_title(f"PBR on 2025-06-30, FY ending 2025-03 (n = {len(sample)})", loc="left")
+fig.text(0.01, -0.02, "Fictional data", fontsize=8, color="#52514e")
+plt.show()
+
+# ------------------------------------------------------------
+# 4-2 散布図
+
+fig, ax = plt.subplots(figsize=(6, 4))
+ax.scatter(sample["ROE"] * 100, sample["PBR"], color="#2a78d6", s=40)
+for _, row in sample[sample["PBR"] > 10].iterrows():
+    ax.annotate(row["Code"], (row["ROE"] * 100, row["PBR"]), xytext=(-40, -4), textcoords="offset points")
+ax.set_xlabel("ROE (%, year-end equity)")
+ax.set_ylabel("PBR (times)")
+ax.set_title(f"ROE and PBR (n = {len(sample)})", loc="left")
+ax.grid(color="#e1e0d9", linewidth=0.6)
+fig.text(0.01, -0.02, "Price: 2025-06-30. Fiscal year ending 2025-03. Fictional data", fontsize=8, color="#52514e")
+plt.show()
+
+# ------------------------------------------------------------
+# 4-3 外れ値を隠すことと、除くことは違う
+
+fig, ax = plt.subplots(figsize=(6, 4))
+ax.scatter(sample["ROE"] * 100, sample["PBR"], color="#2a78d6", s=40)
+ax.set_ylim(0, 4)
+hidden = (sample["PBR"] > 4).sum()
+ax.set_xlabel("ROE (%, year-end equity)")
+ax.set_ylabel("PBR (times)")
+ax.set_title(f"ROE and PBR, y-axis cut at 4 (n = {len(sample)}, {hidden} not shown)", loc="left")
+ax.grid(color="#e1e0d9", linewidth=0.6)
+fig.text(0.01, -0.02, "Price: 2025-06-30. Fiscal year ending 2025-03. Fictional data", fontsize=8, color="#52514e")
+plt.show()
+
+print(f"PBRの中央値（{len(sample)}社）:", round(sample["PBR"].median(), 3))
+
+# ------------------------------------------------------------
+# 4-4 図の1点を元の表まで辿る
+
+code = sample.loc[sample["PBR"].idxmax(), "Code"]
+print("PBRが最大の銘柄:", code)
+print(master_u[master_u["Code"] == code])
+print(fins.loc[fins["Code"] == code, ["DiscDate", "DocType", "CurPerEn", "NP", "ShEq", "BPS", "ShOutFY", "TrShFY"]])
+print(daily.loc[daily["Code"] == code, ["Date", "C"]])
+
+# ------------------------------------------------------------
+# 5-1 処理を関数にまとめる
+# ------------------------------------------------------------
+# 2〜3節で1つずつ確かめた読み込み・結合・変数作成・条件を、そのままの順で1つの関数にします。
+# 引数を変えれば、評価日・決算期・結合方法を変えて同じ手順をもう一度実行できます。
+# この関数は長いので、Shift+Enter でまとめて送るとterminalの行編集が崩れます。
+# notebookなら、このcellをそのまま実行すれば定義されます。
+def build_sample(data_dir, eval_date, fy_end, how="left"):
+    """3つの表を読んで結合し、条件を1つずつ足して、最後に残った標本と段階ごとの社数の表を返す。"""
+    counts = []
+
+    def count(step, frame):
+        counts.append({"step": step, "rows": len(frame), "companies": frame["Code"].nunique()})
+
+    master = pd.read_csv(f"{data_dir}/master.csv", dtype={"Code": str}).drop_duplicates()
+    fins = pd.read_csv(f"{data_dir}/fins.csv", dtype={"Code": str}, parse_dates=["DiscDate", "CurPerEn"])
+    daily = pd.read_csv(f"{data_dir}/daily_{eval_date}.csv", dtype={"Code": str}, parse_dates=["Date"])
+    count("銘柄の表（重複を除く）", master)
+
+    fy = fins[(fins["CurPerType"] == "FY")
+              & fins["DocType"].str.startswith("FYFinancialStatements")
+              & (fins["CurPerEn"] == fy_end)
+              & (fins["DiscDate"] <= eval_date)]
+    fy = fy.sort_values(["Code", "DiscDate"]).drop_duplicates("Code", keep="last")
+    count("通期決算（銘柄ごとに1行）", fy)
+
+    panel = master.merge(fy, on="Code", how=how, validate="one_to_one")
+    count(f"銘柄と決算の結合（{how}）", panel)
+    panel = panel.merge(daily[["Code", "C"]], on="Code", how="left", validate="one_to_one")
+    count("評価日の株価を結合", panel)
+
+    panel["Shares"] = panel["ShOutFY"] - panel["TrShFY"]
+    panel["MV"] = panel["C"] * panel["Shares"]
+    panel["PBR"] = panel["MV"] / panel["ShEq"]
+    panel["ROE"] = panel["NP"] / panel["ShEq"]
+
+    financial = ["銀行業", "証券、商品先物取引業", "保険業", "その他金融業"]
+    steps = [
+        ("プライム", panel["MktNm"] == "プライム"),
+        ("金融業を除く", ~panel["S33Nm"].isin(financial)),
+        ("通期決算がある", panel["NP"].notna() & panel["ShEq"].notna()),
+        ("自己資本が正", panel["ShEq"] > 0),
+        ("評価日の株価がある", panel["C"].notna()),
+    ]
+    keep = pd.Series(True, index=panel.index)
+    for step, condition in steps:
+        keep = keep & condition
+        count(step, panel[keep])
+    return panel[keep].copy(), pd.DataFrame(counts)
+
+
+def industry_table(sample):
+    """業種ごとの社数と、PBR・ROEの平均・中央値。"""
+    return (sample.groupby("S33Nm")
+            .agg(n=("Code", "count"),
+                 PBR_mean=("PBR", "mean"), PBR_median=("PBR", "median"),
+                 ROE_mean=("ROE", "mean"), ROE_median=("ROE", "median"))
+            .reset_index())
+
+
+sample_fn, counts_fn = build_sample("data", eval_date="2025-06-30", fy_end="2025-03-31")
+print(counts_fn)
+print(industry_table(sample_fn).round(3))
+# 読み方: 社数の表と業種別の表は、2〜4節で1つずつ作ったものと同じです。
+# how="inner" にすると、結合の段階は63社になり、最後の標本は46社で変わりません。
+# eval_date を "2025-07-31" にすると、その日の株価 daily_2025-07-31.csv がないので FileNotFoundError になります。
+# 評価日を変えるには、その日の株価の表も用意します。

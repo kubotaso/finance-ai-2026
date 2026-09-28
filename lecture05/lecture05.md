@@ -1,412 +1,383 @@
 ---
-title: "第5回　Markdownで原稿を組み立て、Word・PDF・slideへ変換する"
-subtitle: "記法、数式、Pandoc、Marp"
+title: "第5回　Python I：Jupyter、基本文法と現在価値"
+subtitle: "script・対話モード・notebook、変数・if・for・関数、複利と現在価値"
 date: "2026年10月15日（木）2限　金融論"
 ---
 
-# 文書とslideを作る
+# 実習の準備
 
-原稿・図・式を含む短い文書を作り、HTMLまたはWord、MarpのPDFへ変換します。変換の指定はCodexに任せ、出力で文字・数式・図のcaption・長い見出しを確認します。
+`sys.executable` でワークブックが使うPythonを表示します。Codexにterminal側のPythonの実体も表示させ、HW01で選んだ環境と一致させます。
 
-図の代替textは読み上げや変換先のcaptionにも使われます。CSVの末尾を練習コピーで変えると、図だけでなく本文の値・期間・結論を再点検する箇所が分かります。
+年率5%は `rate=0.05`、期間5年は `years=5` と入力します。金額は円、受取は各年末です。年率と年数をそろえて計算します。住宅の発展例は返済額から求める理論上の借入元本で、購入可能額そのものではありません。
+
+error実習の後は、意図的に壊した行を戻すかコメントにし、kernelを再起動して先頭から実行し、fileを保存します。
 
 
 # この回で扱うこと
 
-課題2以降の原稿は、Markdownで書くことが多いです。この回で扱うのは、その書き方と、そこからWord・PDF・slideを作る方法です。
+- プログラミング言語とは：コンパイル型とスクリプト型、代表的な言語
+- Pythonを動かす3つの方法：script（`.py`）、対話モード、notebook（`.ipynb`）
+- 変数、型、計算
+- 条件分岐（`if`）
+- listと繰り返し（`for`）
+- 関数（`def`）
+- 複利と現在価値
 
-- 文章を扱うfile形式の整理
-- Markdownの記法と、日本語で書くときに引っかかるところ
-- 数式の書き方
-- Pandocで `.docx` とHTMLに変換する
-- 日本語PDFの作り方（失敗しやすい箇所が決まっています）
-- Marpで同じ原稿からslideを作る
+手を動かすのは `workbook/workbook.py` です。この回の3〜7節のcodeを上から並べたscriptで、▷ を押すと全部が実行されます。同じcodeを `# %%` でcellに区切り、Shift+Enterで1つずつ実行しながら説明を読める形が `workbook/workbook_cells.py`、notebook版が `workbook/workbook.ipynb` です。`workbook/pv.py` は、scriptとして動かすための短いfileです。`workbook/scripts/` には、3〜7節を節ごとに独立した `.py` にしたものがあります。「やってみる」の答え合わせは、Codexに頼めます。
 
-変換commandの細かい指定はCodexに組ませます。
+# プログラミング言語とは
 
-配布物は2つあります。`workbook/workbook.md` は、上から順に手を動かしていくワークブックです。授業中はこちらを開いてください。`sample/` は記法を一通り使った完成原稿で、`report.md` と `slides.md`、それぞれの変換後のfileが入っています。
+プログラミング言語は、コンピュータにさせたい処理を人が書くための言葉です。書いたものはただのtext fileで、これをprogram、code、またはsourceと呼びます。
 
-# 文章のfile形式
-
-文章を扱うfile形式は、中身の作りで3つに分かれます。
-
-## そのまま読めるtext
-
-editorで開けば中身が見えます。行単位で差分が取れるので、AIが何を書き換えたかを追えます。
-
-| 拡張子 | 何か |
-|---|---|
-| `.txt` | ただの文字。構造を示す方法がありません |
-| `.md` | Markdown。`#` や `-` などの記号で構造を示します |
-| `.tex` | LaTeX。組版の指定まで書きます。論文誌の原稿 |
-| `.html` | webページ。タグで構造を示します |
-| `.ipynb` | Jupyter notebook。文章・code・実行結果が1つのfileに入ります。 |
-| `.rtf` | 書式付きtext。Wordより前からある互換用の形式です |
-
-## 中身を固めたもの
-
-1つのfileに見えますが、実体は複数のfileをZIPで固めたものです。差分は取れません。
-
-| 拡張子 | 何か |
-|---|---|
-| `.docx` | Word |
-| `.pptx` | PowerPoint |
-| `.odt`、`.odp` | LibreOfficeなど。`.docx`・`.pptx` に対応する公開規格 |
-| `.pages`、`.key` | Apple の Pages と Keynote |
-| `.epub` | 電子書籍。中身はHTMLの集まり |
-
-Excelの `.xlsx` も同じ作りです。Google DocsやGoogle Slidesはfileではなくservice上の文書で、`.docx` や `.pptx` に書き出して受け渡しします。
-
-## 配布用
-
-`.pdf` は、font・改行位置・図の配置まで固定した形式です。どの環境でも同じに見える代わりに、編集は想定されていません。提出と印刷のための最終形と考えます。
-
-## この授業で使うもの
-
-原稿を `.md` で書き、提出する形に変換します。
-
-| 用途 | 使うもの |
-|---|---|
-| 書く | `.md` |
-| 提出する | `.docx`、`.pdf` |
-| 発表する | Marpのslide（`.pdf`）、`.pptx` |
-| 卒論や論文誌 | `.tex`（補論で触れます） |
-
-# なぜMarkdownで書くか
-
-Wordを使わない、という話ではありません。**原稿はMarkdownで書き、提出する形式には最後に変換する**、という順番の話です。提出先や共著者がWordを求める場面は多いので、変換は後ろに置きます。
-
-## `.docx` の正体
-
-さきほど「中身を固めたもの」と書いた `.docx` を、実際に開いてみます。拡張子を `.zip` に変えると中が見えます。
-
-```
-$ unzip -l report.docx
-  1933  [Content_Types].xml
-   722  _rels/.rels
-  4681  word/document.xml
-  1203  word/_rels/document.xml.rels
- 27124  word/styles.xml
-   843  word/footnotes.xml
+```python
+amount = 110
+rate = 0.10
+pv = amount / (1 + rate)
+print(pv)
 ```
 
-本文は `word/document.xml`、書式は `word/styles.xml`、脚注は `word/footnotes.xml` と、役割ごとに分かれています。これらをZIPで固めたものが `.docx` です。通常のtext diffでは圧縮前の本文を直接読めません。Wordには文書比較機能があります。Markdownは通常のtext diffで変更行を読みやすい形式です。
+上の4行はPythonで書いたprogramです。コンピュータが直接理解できるのは0と1の並び（機械語）だけなので、人が書いたcodeを機械語に直す仕組みが要ります。その直し方で、言語は大きく2つに分かれます。
 
-Markdownはただのtextです。AIが直接読み書きでき、変更は行の差分として出ます。AIが何を書き換えたかを、出力ではなく差分で見られます。
+## コンパイル型とスクリプト型
 
-## 一つの原稿から複数の形式
+コンパイル型は、codeを先にまるごと機械語へ翻訳し、できた実行file（Windowsなら `.exe`）を動かします。翻訳する道具をcompilerと呼びます。翻訳に手間がかかるかわりに、できたprogramは速く動きます。C、C++、Go、Rustがこの型です。OSやゲーム、証券取引所の売買systemはこの型で書かれています。
 
-同じ `report.md` から `.docx`、HTML、PDF、slideが作れます。Wordを入力にできる変換toolもあります。ここでは原稿の差分を読みやすく、再生成しやすいMarkdownを正本にします。
+スクリプト型は、codeを翻訳せず、interpreterと呼ばれるprogramが1行ずつ読んで実行します。書いてすぐ動かせるので、試しながら書くのに向いています。そのかわり、同じ処理ならコンパイル型より遅くなります。Python、R、JavaScript、Excelのマクロ（VBA）がこの型です。Pythonはスクリプト型なので、次の節の「1行打つたびに実行する」使い方ができます。
 
-図をscriptで作って、Markdownからrelative pathで参照しておくと、dataを更新して図を作り直すだけで済みます。画像pathはそのまま使えます。caption・期間・本文の数値・結論は更新後に照合します。Wordに図を貼り込んだ場合は、更新のたびに貼り直しになります。
+中間の型もあります。Javaは、codeをbytecodeという機械語に近い中間の形へ先に翻訳し、JVM（Java Virtual Machine）というprogramがそれを実行時に機械語へ直しながら動かします。どのOSでも同じbytecodeが動くのが利点です。C#も同じ仕組みです。Pythonも内部ではbytecodeへ直してから実行しますが、その翻訳は自動で毎回行われるので、使う側からはスクリプト型として見えます。
 
-## 見た目ではなく構造を書く
+Pythonの速さが足りないところは、内部をCで書いたlibraryが補います。第6回以降で使うpandasやnumpyがそれで、表計算の部分はCの速さで動きます。
 
-Wordの直接書式と見出しstyleは別です。見出しstyleを使えばWordでも構造を表せます。Markdownの `##` は「見出しレベル2」という構造です。`.docx` ではWordの見出しstyle、HTMLでは `<h2>`、slideでは頁の題になります。体裁は変換のときに決まります。
+## 代表的な言語
 
-# 記法
-
-## 一覧
-
-| 書くもの | 記法 |
-|---|---|
-| 見出し | `# 大見出し`、`## 中見出し`、`### 小見出し` |
-| 強調 | `**太字**`、`*斜体*` |
-| 箇条書き | 行頭に `- `。番号付きは `1. ` |
-| link | `[表示する文字](https://example.com)` |
-| 画像 | `![代替text](figures/fig01.png)` |
-| 引用 | 行頭に `> ` |
-| 文中のcode | `` `pandoc` `` のようにbacktickで挟む |
-| code block | 3つのbacktickで囲む。先頭に `python` などの言語名 |
-| 脚注 | 本文に `[^1]`、別の行に `[^1]: 脚注の中身` |
-| 区切り線 | `---` を単独の行に |
-
-表は縦棒で区切り、2行目に `|---|---|` を置きます。縦棒の位置が揃っていなくても動きます。
-
-```
-| 系列 | 出所 |
-|---|---|
-| 実質GDP | 内閣府 |
-| CPI | 総務省統計局 |
-```
-
-## 段落と改行
-
-空行が段落の区切りです。段落の中で改行しても、変換すると1行につながります。
-
-ここで日本語特有の問題が出ます。Pandocは行のつなぎ目に半角空白を入れるので、
-
-```
-日本語の一行目
-二行目です。
-```
-
-と書くと、変換後は `日本語の一行目 二行目です。` になります。真ん中に空白が入っています。
-
-避け方は二つです。1段落を1行で書くか、変換するときに `-f markdown+east_asian_line_breaks` を付けます。後者を付けると空白は入りません。
-
-段落を変えずに改行したいときは、行末に半角空白を2つ置きます。
-
-## 道具によって使える記法が違う
-
-Markdownには方言があります。脚注はPandocでは使えますが、Marpのslideでは扱いが違います。GitHubの画面で見えるものとPandocの出力が一致しないこともあります。どの道具に通すかで、使える記法が決まります。
-
-VS Codeのプレビュー（⇧⌘V）を元のtextと並べて開くと、記号と見た目の対応が読めます。`sample/report.md` はこの表の記法を全部使っていて、末尾にどこで使ったかの対応表を付けてあります。
-
-# 数式
-
-## 書き方
-
-数式はLaTeX記法で書きます。文中は `$` で挟み、独立した行は `$$` で囲みます。
-
-```
-文中：収益率は $r_t = (P_t - P_{t-1})/P_{t-1}$ で定義される。
-
-独立行：
-$$
-i_t = r^* + \pi_t + a(\pi_t - \pi^*) + b \cdot \text{gap}_t
-$$
-```
-
-金融論でよく出てくるのは、複利 $(1+r)^n$、現在価値 $\sum_t C_t/(1+r)^t$、収益率 $r_t=(P_t-P_{t-1})/P_{t-1}$ あたりです。添字は `_`、べき乗は `^`、2文字以上は `{}` でくくります。
-
-HTMLとPDFでは `--math-method=mathjax` を付けます。指定しない場合はPandocの既定の方法で変換されます。Pandoc 3.11ではMathMLです。表示はbrowserでも確認します。`.docx` は指定なしでWordの数式になり、Word上で編集できます。
-
-AIが出した式をそのまま貼ると、記号の定義が本文になかったり、添字が途中で変わっていたりします。式を書いたら、記号が何を指すかを本文の側に書いておくと、後から読み直せます。
-
-# 原稿の組み立て
-
-## front matter
-
-fileの先頭に `---` で囲んだ部分を置くと、Pandocが題名・著者・日付として読みます。
-
-```
----
-title: "日米自動車産業と為替"
-author: "久保田荘"
-date: "2026年10月15日"
----
-```
-
-## 見出しの階層
-
-`#` が章、`##` が節です。`--toc` を付けて変換すると、この階層から目次が自動で作られます。章を飛ばして `###` から始めると、目次の階層が崩れます。
-
-## 図と表
-
-図には番号とcaptionを付けて、本文から参照します。pathは原稿fileからの相対で書きます。
-
-```
-![図1　日米の政策金利](figures/fig01_policy_rates.png)
-```
-
-`figures/` を原稿と同じfolderに置いておくと、folderごと移動しても壊れません。絶対pathで書くと、他の人のPCでは開けません。
-
-## 骨格
-
-課題の原稿は、題名、要約、背景、data、分析、結論、referencesの順に組みます。中身を書く前に空の見出しだけ並べておくと、どこが埋まっていないかが目次に出ます。
-
-構成案はAIに出させると早いです。ただし、その章立てにした理由は自分の言葉で書けるようにしておくと、後で構成を変えるときに判断できます。
-
-# WordとHTMLへの変換
-
-## Pandoc
-
-Pandocは文書の形式を変換するtoolです。Markdownから `.docx`、HTML、`.pptx` などを作ります。基本の形は1行です。
-
-```
-pandoc report.md -o report.docx
-```
-
-`-o` の後が出力file名で、拡張子で形式が決まります。HTMLにする、数式を組む、目次を付ける、体裁を当てる、といった指定はoptionを足していきます。optionは覚えなくてかまいません。「report.mdを目次付きのHTMLにして」とCodexに頼めば、commandを組んで実行します。自分で確かめるのは、出てきたfileの見た目です。
-
-出力された `.docx` をWordで開くと、`#` が見出し1、`##` が見出し2のstyleとして入っています。ナビゲーションウィンドウに目次が出ます。
-
-## 体裁を指定する
-
-Wordの書式は見本の `.docx` で決まります。見出しのfontや余白を直した見本を用意し、「この見本の書式で変換して」とCodexに渡します。HTMLの体裁はCSS fileで決まります。
-
-## 変換後のfileは直さない
-
-`.docx` やHTMLを直接編集しても、次に変換したときに上書きされます。直す先は常に元のMarkdownです。変換は何度でもやり直せます。
-
-### コラム：Office appに入るClaudeとChatGPT
-
-> 2026年9月時点で、ClaudeとChatGPTはMicrosoft Officeのadd-inを出しています。Microsoft Marketplaceから入れ、appの右側に出るpanelで各自のaccountにsign inして使います。
->
-> | | Word | Excel | PowerPoint | Outlook | 使えるplan |
-> |---|---|---|---|---|---|
-> | Claude | ○ | ○ | ○ | ○ | Pro、Max、Team、Enterprise |
-> | ChatGPT | × | ○ | ○ | × | Freeを含む全plan（Free・Goは制限あり） |
->
-> Claude for Wordは、編集をWordの変更履歴として入れます。一つずつ承諾・却下でき、コメントに沿った修正もできます。ChatGPTにWord版はなく、WordでOpenAIのmodelを使うならMicrosoft 365 Copilotを経由します。
->
-> この授業の流れでは、add-inで `.docx` を直すと、上の節と同じ問題が起きます。Markdownから作り直した時点で修正が消えます。add-inが向くのは、共著者から戻ってきた `.docx` の変更履歴を読む場面や、相手がWordで作業を続ける場面です。
-
-# PDFにする
-
-PDFは、いったんHTMLにしてから、browserで印刷して作ります。体裁をCSSで書けるのが利点です。
-
-手でやるなら、HTMLをChromeで開き、⌘P（WindowsはCtrl+P）から「PDFに保存」を選びます。何度も作り直すときは「report.mdをHTML経由でPDFにして」とCodexに頼みます。Chromeを画面なしで動かすcommandを組んで実行します。
-
-CSSの `@media print` に書いた指定がここで効きます。図の大きさや改頁の位置を、画面用と印刷用で変えられます。
-
-体裁にこだわらないなら、`.docx` に変換してWordから書き出す方法もあります。
-
-変換が失敗したときのerror messageは、そのままAIに渡すと直せることが多いです。何を直したかは差分で見ます。
-
-# Marpでslideにする
-
-## 仕組み
-
-Marpは、Markdownからpresentation slideを作るtoolです。前半で書いた原稿と同じ記法のまま、頁に区切ったものがslideになります。
-
-fileの先頭に `marp: true` を書きます。
-
-```
----
-marp: true
-theme: default
-paginate: true
-size: 16:9
----
-
-# 1枚目の題
-
-- 箇条書き
-- もう一つ
-
----
-
-# 2枚目の題
-```
-
-`---` を単独の行に置くと、そこが頁の区切りです。front matterの `---` と同じ記号ですが、位置で区別されます。
-
-## 見た目を変える
-
-HTMLのコメントの形で指定を書きます。
-
-```
-<!-- _class: lead -->
-```
-
-`_` が付くとその1枚だけ、付かないとそれ以降すべてに効きます。使えるclass名はthemeで決まっていますが、自分で足すこともできます。
-
-front matterの `style:` にCSSを直接書くと、そのfile全体の体裁を変えられます。第1回のslideはこの方法で、font、色、二段組みを指定しています。
-
-画像は幅や高さを指定して貼ります。
-
-```
-![width:600px](figures/fig01.png)
-![bg right](figures/photo.jpg)
-```
-
-`bg right` を付けると、その画像が頁の右半分の背景になります。
-
-## 書き出す
-
-VS Codeの拡張（marp-team.marp-vscode）を入れると、編集しながら右側にslideのpreviewが出ます。
-
-PDFやHTMLへの書き出しは、「slides.mdをPDFにして」とCodexに頼みます。Marpのcommandを組んで実行します。出てきたfileを開き、図が空欄になっていないかを見ます。
-
-`Currently waiting data from stdin stream` と表示されたまま止まったら、Codexにその表示を貼って直させます。Marpの指定が1つ足りないときに出る表示です。
-
-## PowerPointにする
-
-提出先や共同発表者がPowerPointを求めることがあります。経路は3つあって、出てくるものが違います。Codexに頼むときは、どれで出すかを指定します。
-
-| 経路 | 出るもの | PowerPoint側で直せるか |
+| 言語 | 型 | 主な用途 |
 |---|---|---|
-| Marp（通常） | Marpの見た目のまま。各頁が画像1枚 | 直せない |
-| Marp（編集可能） | Marpの見た目で、文字はtext box | 直せる（実験的機能） |
-| Pandoc | PowerPointの標準のslide | 直せる |
+| C / C++ | コンパイル | OS、組み込み、高速な計算 |
+| Java | 中間（bytecode + JVM） | 銀行や企業の業務system、Androidアプリ |
+| JavaScript | スクリプト | Webページの動き |
+| Python | スクリプト | データ分析、機械学習、AI |
+| R | スクリプト | 統計、経済学・金融の実証研究 |
+| Stata | スクリプト | 経済学の実証研究。労働・開発・医療経済学の論文で標準 |
+| MATLAB | スクリプト | マクロ経済学の動学モデル、工学の数値計算 |
+| Julia | スクリプト | マクロの動学モデル、計算量の多い構造推定 |
+| Fortran | コンパイル | 気象や物理の大規模計算。古い大型マクロ計量モデルの一部 |
+| SQL | （問い合わせ言語） | databaseからデータを取り出す |
+| VBA | スクリプト | Excelの自動化 |
 
-Marpの通常の書き出しは見た目が完全に再現されます。ただし中身は画像なので、渡した相手が文字を直せません。共同発表で相手が手を入れるなら、残りの2つを使います。
+Pythonは1991年に公開された言語で、文法が短く読みやすいことから、いまはデータ分析とAIの標準的な言語になっています。Rは統計のために作られた言語で、経済学の論文の計算はRで書かれたものが多くあります。
 
-編集可能な書き出しは実験的な機能です。凝ったCSSは再現されないことがあるので、出したら開いて確かめます。
+経済学では、分野ごとに使う言語が分かれています。個票データで回帰分析をする実証研究はStataかRです。Stataは有料で、回帰分析のcommandが1行で済むので、労働経済学や開発経済学の論文の再現fileはStataで配られることが多いです。マクロ経済学の動学モデルを解く研究はMATLAB（有料）で、Dynareという道具がMATLAB上で動きます。近年はこの用途をJuliaやPythonへ移す動きがあります。金融のデータ分析は、業界ではPythonが標準です。この授業では第5回から第12回でPython、第13回以降でRを使います。
 
-Pandocの `.pptx` は `slides.md` ではなく `report.md` から作ります。この作例では見出しレベル1を区切りに指定します。一般には指定や原稿構造で区切りのレベルが決まり、水平線でも区切れます。front matterから表紙も作られます。Marpのthemeは効きません。PowerPointの既定の体裁になります。体裁を変えたいときは、`.docx` と同じく見本の `.pptx` をCodexに渡します。
+言語が違っても、変数・条件分岐・繰り返し・関数という部品は共通です。この回でPythonの部品を覚えると、別の言語に移るときは書き方の違いを見るだけで済みます。
 
-## reportとslideは別のfile
+## library・import・pip
 
-同じfolderに `report.md` と `slides.md` を並べて、図は共通の `figures/` を見る構成にします。reportの文章をそのままslideに貼ると、1枚に収まりません。slideは箇条書きと図が中心になります。
+Python本体に入っているのは、この回で使う変数・`if`・`for`・関数と、`print` や `round` のような少数の関数だけです。CSVを表として読む、図を描く、といった機能は、他の人が書いてまとめたcodeの束を借りて使います。この束をlibrary、またはpackageと呼びます。
 
-# 補論　LaTeXについて
+libraryは、pipという道具で環境に入れます。`pip install pandas` のように打つか、Codexに「pandasを入れて」と頼めば済みます。入れるのは環境ごとに1回です。HW01で `finance-env` にpandasとmatplotlibを入れたのがこの作業でした。この授業で使うのは、表を扱うpandas、図を描くmatplotlib、数値計算のnumpyの3つです。
 
-経済学の論文誌に出す原稿は、ほとんどがLaTeXで書かれています。この授業では使いませんが、卒論や大学院で必要になるかもしれないので、触れておきます。
+`import` は、入れてあるlibraryを、いま動いているPythonに読み込む操作です。scriptならfileの先頭に書き、notebookなら最初のcellに書いて、kernelを再起動するたびに実行し直します。次の節で最初に実行する `import sys` は、Python本体に付いてくるlibrary `sys` を読み込む行です。`import pandas as pd` のように `as` を付けると、以後 `pd` という短い名前で呼べます。`pd` は慣例の略で、pandasを使う人はほぼ全員この名前を使っています。
 
-## Markdownとの違い
+入れていないlibraryを `import` すると `ModuleNotFoundError` になります。別の環境を選んでいるときにも同じerrorが出ます。次の節で環境を選ぶのは、このためです。
 
-LaTeXは1980年代からある組版system（TeX）の上に作られた文書作成の仕組みです。Markdownと同じく、text fileに記号を書いて構造を示します。違うのは、Markdownが「変換先で体裁が決まる」のに対し、LaTeXは「組版の指定まで自分で書く」点です。そのぶん記法の量が多く、fileの先頭に設定（preamble）を並べます。
+# Pythonを動かす3つの方法
 
-```latex
-\documentclass[12pt,a4paper]{article}
-\usepackage{amsmath,amssymb,amsfonts}
-\usepackage{graphicx}
-\usepackage{natbib}
-\usepackage[margin=1in]{geometry}
+## VS Codeで使うPython環境を選ぶ
+
+Pythonのenvironment（環境）は、Python本体と、そこに入れたlibraryの組み合わせです。同じPCに複数の環境がある場合、別の環境を選ぶと、入れたはずのlibraryが見つからないことがあります。この授業では、HW01で作った `finance-env` を使います。すでに選ばれていれば、選び直す必要はありません。
+
+Pythonファイル（`.py`）を開くと、画面右下のステータスバーにPythonのバージョンや環境名が表示されます。その表示をクリックし、出てきた候補から `finance-env` を選びます。
+
+表示が見つからない場合は、Windowsでは `Ctrl + Shift + P`、Macでは `Command + Shift + P` でコマンドパレットを開きます。画面上部に出る検索欄に `Python: Select Interpreter` と入力して選ぶと、Python環境の候補が出ます。Python拡張機能が必要なので、この項目が出ない場合はCodexに導入を頼めます。
+
+`finance-env` が候補にない場合は、`Enter interpreter path...` から、その環境のPythonを指定します。HW01の配置なら、`金融論` フォルダ内の、Windowsでは `finance-env\Scripts\python.exe`、Macでは `finance-env/bin/python` です。実際の保存先が分からない場合は、Codexに既存の `finance-env` を探してもらえます。
+
+環境を切り替えた後は、新しいterminalを開くと、選んだ環境が通常は有効になります。以下のcodeを実行すると、実際に使っているPythonの場所が表示されます。pathに `finance-env` が含まれていれば、授業用の環境で動いています。
+
+```python
+import sys
+print(sys.executable)
 ```
 
-数式の書き方は「数式」の節で見たものと同じです。Markdownで `$` に挟んで書いていたのは、もともとLaTeXの記法です。
+画面上部に一時的に出る文字入力用の欄は、入力ボックス（Input Box）です。コマンドパレットは操作を検索する欄で、実習中の入力ボックスは値を入力する欄です。表示されている案内を読むと、何を入力する場所かが分かります。
 
-## 主なもの
+## script
 
-| 名前 | 何か |
+scriptは、codeだけを書いたtext fileです。拡張子は `.py` です。
+
+```python
+# 1年後に受け取る110円の現在価値（割引率10%）
+
+amount = 110
+rate = 0.10
+years = 1
+
+pv = amount / (1 + rate) ** years
+print(round(pv, 2))
+```
+
+1行目の `#` から行末まではコメントで、Pythonは読み飛ばします。人が読むための説明をここに書きます。行の途中に `# ...` と付けて、その行の説明にすることもできます。実行させたくない行の先頭に `#` を付けると、その行は消さずに止めておけます。VS Codeでは、行を選んで ⌘/（WindowsはCtrl+/）を押すと、選んだ行の先頭に `#` が付きます。もう一度押すと外れます。ワークブックでerrorを確かめた行は、あとでこの形にしておきます。
+
+terminalで `python pv.py` と打つか、VS Codeの右上の ▷ を押すと、上から下まで一度に実行されます。結果はterminalに表示され、fileには残りません。
+
+VS Codeでは、実行したい行をマウスで選んで Shift+Enter を押すと、その部分だけをterminalの対話モードで実行できます。右クリックして「ターミナルで選択範囲/行を実行」を選んでも同じです。何も選択せずに Shift+Enter を押すと、カーソルがある1行が実行されます。`def` や `for` のように字下げで続く複数行の中にカーソルがあれば、そのまとまり全体が送られます。
+
+Python 3.13の対話モードは、複数行をまとめて貼り付けると文字が崩れて `SyntaxError` になることがあります。terminalの環境変数 `PYTHON_BASIC_REPL` を `1` にしておくと、以前の対話モードになり、まとめて送れます（環境変数は第7回で扱います）。Codexに「VS Codeのterminalで環境変数 PYTHON_BASIC_REPL=1 が常に有効になるように設定して」と頼むと、VS Codeの設定fileに書いてくれます。
+
+実行のたびに、何もない状態から始まります。前回の実行で作った変数は残っていません。
+
+## 対話モード
+
+terminalで `python` とだけ打つと、`>>>` が表示されます。Pythonが起動したまま、1行打つたびに実行して結果を返す状態です。
+
+```
+>>> amount = 110
+>>> amount * 2
+220
+>>> exit()
+```
+
+式を打つと、`print` しなくても値が表示されます。作った変数は `exit()` で抜けるまで残り、抜けると消えます。打ったcodeも結果も、どこにも保存されません。
+
+`>>>` の後ろに打つのはPythonのcodeです。ここで `python pv.py` と打つと `SyntaxError` になります。`python pv.py` はterminalに打つcommandなので、`exit()` で抜けてから打ちます。
+
+## notebook
+
+notebookは、文章・code・実行結果を1つのfileにまとめたものです。拡張子は `.ipynb` です。
+
+中身はcellに分かれています。文章を書くMarkdown cellと、codeを書くcode cellの2種類です。code cellは1つずつ実行でき（Shift+Enter）、結果はそのcellのすぐ下に出て、fileに保存されます。
+
+notebookの後ろでは、kernelと呼ばれるPythonが動き続けています。あるcellで作った変数は、kernelに残り、別のcellから使えます。値が自動で表示されることも含めて、kernelの動きは対話モードと同じです。notebookは、対話モードで打つcodeをcellに分け、codeと結果をfileに残せるようにしたものです。
+
+notebookでは、右上の `Select Kernel`（選択済みならkernel名）をクリックして、使うPythonを選びます。`Select Another Kernel...` が出た場合はそこから `Python Environments` を開き、`finance-env` を選びます。候補や選択中のkernel名で、環境を確認できます。右下のPython環境の選択とは別なので、notebookの右上でも確認します。
+
+その環境に `ipykernel` というpackageが入っていれば、notebookを実行できます。VS CodeがInstallを勧めた場合は、選んだ `finance-env` にインストールします。準備や候補への表示で詰まった場合は、Codexに既存の `finance-env` を使うよう伝えて設定を頼めます。
+
+最初のcode cellで `import sys` と `print(sys.executable)` を実行すると、kernelが使っているPythonの場所も確かめられます。
+
+## 違い
+
+| | script（`.py`） | 対話モード | notebook（`.ipynb`） |
+|---|---|---|---|
+| 始め方 | `python pv.py`、▷、Shift+Enter | `python` | `.ipynb` を開いてcellを実行 |
+| 実行する単位 | file全体、または選択行 | 1行ずつ | cell 1つ |
+| 実行の順番 | いつも上から下 | 打った順 | cellを押した順 |
+| 変数 | 実行のたびに空から始まる | `exit()` まで残る | kernelに残り続ける |
+| 値の表示 | `print` したものだけ | 自動 | cellの最後の行は自動 |
+| codeと結果 | codeはfileに残る。結果はterminalに出るだけ | どちらも残らない | どちらもfileに残る |
+| 向いている使い方 | 同じ処理を何度も走らせる、他の人が再実行する | 1行だけ試す | 試しながら読む、説明と結果を並べる |
+
+## notebookの実行順序
+
+notebookでは、画面に見えているcodeと、kernelの中の変数が食い違うことがあります。
+
+```python
+# cell 1
+price = 100
+```
+
+```python
+# cell 2
+price * 2
+```
+
+cell 1とcell 2を実行すると `200` が出ます。次にcell 1を `price = 300` に書き換え、cell 1は実行せずにcell 2だけ実行すると、やはり `200` が出ます。kernelの中の `price` は100のままだからです。
+
+表示されているcodeと結果が合っているかは、kernelを再起動して上から全部実行し直すと確かめられます。 VS Codeでは、notebookの上部にある Restart を押してから Run All を押します。この操作は、scriptを実行するのと同じことをnotebookでやっていることになります。
+
+## この授業での使い分け
+
+notebookがあまり得意ではないので、第5回と第6回は、`.py` を主に使います。▷ で上から全部を実行するのがscript、`# %%` で区切った版をShift+Enterで1cellずつ実行するのがnotebookと同じ使い方で、どちらも同じcodeです。第10回では、何度も使う処理を関数にまとめ、`.py` に置いていきます。HW02で提出するcodeは、他の人が上から実行して同じ結果になる形にします。
+
+# 変数、型、計算
+
+## 代入
+
+`=` は「右の値を左の名前に入れる」という意味です。
+
+```python
+A = 1
+B = 2
+C = 3
+print(A, B, C)
+```
+
+等しいかどうかを調べるときは `==` を使います。`test == 60` は、`test` が60なら `True`、違えば `False` を返します。
+
+## 計算
+
+| 書き方 | 意味 | 例 | 結果 |
+|---|---|---|---|
+| `+` `-` `*` | 足し算、引き算、掛け算 | `10 * 20 + 100` | `300` |
+| `/` | 割り算 | `7 / 2` | `3.5` |
+| `` | べき乗 | `1.1  2` | `1.2100000000000002` |
+| `round(x, 2)` | 小数第2位で丸める | `round(1.1 ** 2, 2)` | `1.21` |
+
+べき乗は `**` です。`^` は別の意味の記号で、`1.1 ^ 2` はerrorになります。
+
+小数は2進数で近似して計算するので、`1.1 ** 2` の末尾に `...0002` が付きます。表示するときは `round` で丸めます。
+
+## 型
+
+値には型があります。`type()` で調べられます。
+
+| 型 | 中身 | 例 |
+|---|---|---|
+| `int` | 整数 | `3` |
+| `float` | 小数 | `3.0`、`0.05` |
+| `str` | 文字列 | `"Pen Pineapple Apple Pen"`、`"3"` |
+| `bool` | 真偽 | `True`、`False` |
+
+`"3"` は数字に見えても文字列です。`"3" + "3"` は `"33"` になり、文字をつなげます。`"3" + 3` はerrorです。数として足すには `int("3")` や `float("3")` で数に変換します。
+
+CSVから読んだ値が文字列になっていて計算が合わない、ということが第6回以降でよく起きます。
+
+# 条件分岐
+
+テストの点数が60点以上なら "Pass"、それ以外なら "Fail" と表示します。
+
+```python
+test = 61
+if test >= 60:
+    print("Pass")
+else:
+    print("Fail")
+```
+
+`if` の行の最後に `:` を付け、次の行を字下げ（半角空白4つ）します。字下げされた行が、条件が成り立ったときに実行される部分です。
+
+3つ以上に分けるときは `elif` を使います。
+
+```python
+test = 60
+if test > 60:
+    print("Pass")
+elif test == 60:
+    print("Just barely Pass")
+else:
+    print("Fail")
+```
+
+比べる記号は `>`、`<`、`>=`、`<=`、`==`、`!=`（等しくない）です。
+
+# listと繰り返し
+
+## list
+
+複数の値を `[ ]` でまとめたものがlistです。
+
+```python
+values = [A, B, C]
+values[0]
+```
+
+Pythonの番号は0から始まります。 `values[0]` が1番目、`values[2]` が3番目です。`values[3]` はerrorになります。
+
+listに数を掛けると、要素ごとの計算ではなく、listの繰り返しになります。`[2, 3, 4] * 2` は `[2, 3, 4, 2, 3, 4]` です。列ごとの計算は、第6回のpandasで扱います。
+
+## for
+
+同じ処理を、値を変えながら繰り返します。1から5までを順に足し、途中の結果を表示します。
+
+```python
+total = 0
+for i in range(1, 6):
+    total = total + i
+    print(total)
+```
+
+`range(1, 6)` は1, 2, 3, 4, 5です。終わりの6は含みません。 `range(1, 14, 3)` は3ずつ増えて1, 4, 7, 10, 13になります。
+
+`for` も `if` と同じく、`:` と字下げで繰り返す範囲を示します。
+
+# 複利
+
+100円を年10%で2年間預けます。
+
+- 単利は、毎年元金100円に対して10円の利子が付きます。2年後は120円です。
+- 複利は、利子にも利子が付きます。1年目に110円、2年目は110円の10%で11円が付いて121円です。
+
+$T$ 年後の金額は、単利なら $P(1 + rT)$、複利なら $P(1 + r)^T$ です。20年にすると、単利は300円、複利は約672.75円になります。
+
+複利は「前の年の金額に $(1+r)$ を掛ける」の繰り返しなので、`for` で書けます。途中で金利が変わる場合は `if` を組み合わせます。
+
+```python
+fuku = 100
+for year in range(1, 21):
+    if year <= 10:
+        fuku = fuku * 1.1
+    else:
+        fuku = fuku * 1.2
+print(round(fuku, 2))
+```
+
+最初の10年が10%、残りの10年が20%のとき、20年後は約1,605.98円です。
+
+# 関数
+
+何度も使う計算は、関数にして名前を付けます。
+
+```python
+def future_value(principal, rate, years):
+    return principal * (1 + rate) ** years
+
+future_value(100, 0.10, 2)
+```
+
+`def` の後ろが関数の名前、`( )` の中が引数（関数に渡す値）です。`return` の後ろが、関数から返ってくる値です。
+
+`print` と `return` は違います。`print` は画面に表示するだけで、値を返しません。`return` で返した値は、別の変数に入れたり、さらに計算に使ったりできます。
+
+```python
+x = future_value(100, 0.10, 2)
+x * 2
+```
+
+# 現在価値
+
+## 1回だけ受け取る
+
+複利の式を逆向きに使います。$T$ 年後に受け取る $C$ 円を、割引率 $r$ で今の価値に直すと
+
+$$
+PV = \frac{C}{(1 + r)^T}
+$$
+
+です。1年後の110円を10%で割り引くと、$110 / 1.1 = 100$ 円です。今の100円を10%で1年運用すると110円になるので、1年後の110円と今の100円は同じ価値だと考えます。
+
+```python
+def present_value(amount, rate, years):
+    return amount / (1 + rate) ** years
+
+round(present_value(110, 0.10, 1), 2)
+```
+
+割引率が高いほど、また受け取りが先になるほど、現在価値は小さくなります。割引率が0なら、将来の金額と現在価値は同じです。
+
+## 何年も受け取る
+
+毎年1万円を5年間受け取る権利の現在価値は、各年の現在価値の合計です。割引率は5%とします。
+
+このとき、いつ受け取るかを決めておく必要があります。
+
+| 受け取る時点 | 現在価値の合計 |
 |---|---|
-| TeX / LaTeX | 組版のsystem本体と、その上の文書作成の枠組み |
-| TeX Live、MacTeX | 一式をPCに入れるためのdistribution。数GBあります |
-| pdflatex、lualatex | `.tex` からPDFを作るcommand。日本語にはlualatexを使います |
-| BibTeX | 参考文献のdatabase（`.bib`）から文献リストを作る |
-| Overleaf | browserで書いてcompileできるservice。installが要りません |
+| 1年後から5年後 | 約43,294.77円 |
+| 今すぐ（0年後）から4年後 | 約45,459.51円 |
 
-## compileが要る
+最初の1回を今受け取るほうが、割り引かれない分だけ大きくなります。
 
-Markdownはpreviewがその場で出ますが、LaTeXは毎回compileします。しかも1回では足りません。
-
-```
-pdflatex main.tex
-bibtex main
-pdflatex main.tex
-pdflatex main.tex
+```python
+total = 0
+for t in range(1, 6):
+    total = total + present_value(10000, 0.05, t)
+print(round(total, 2))
 ```
 
-1回目が本文を組み、`\cite` で引いた文献のkeyを記録します。`bibtex` がそれと `.bib` を突き合わせて文献リストを作ります。3回目でそれが本文に入り、4回目で番号と相互参照が確定します。`latexmk -pdf main.tex` を使うと、必要な回数だけ自動で回ります。
-
-この手間と引き換えに、番号付けを自分で書かずに済みます。表に `\label{tab:events}` を付けておくと、本文から `\ref{tab:events}` で呼べます。節を入れ替えても番号は付け直されます。図、表、式、定理、文献も同じ仕組みです。
-
-## 参考文献
-
-文献は `.bib` fileに貯めます。1件が1つのentryです。
-
-```bibtex
-@article{jorda2005,
-  author  = {Jord{\`a}, {\`O}scar},
-  title   = {Estimation and Inference of Impulse Responses by Local Projections},
-  journal = {American Economic Review},
-  volume  = {95}, number = {1}, pages = {161--182}, year = {2005}
-}
-```
-
-本文には `\citep{jorda2005}` と書くだけです。出力の形（著者年か番号か、雑誌名を略すか）は style file（`.bst`）が決めます。投稿先を変えるときは style file を差し替えます。文献リストの並べ直しは要りません。
-
-Google ScholarやJSTORには、文献のBibTeX形式を出す機能があります。貼り付けて貯めていく使い方になります。
-
-## Overleaf
-
-[Overleaf](https://www.overleaf.com/) は、browserで動くLaTeXの編集画面です。TeXをPCに入れなくてよく、左に原稿、右にPDFが出ます。共著者と同時に編集でき、変更履歴も残ります。経済学では共著の原稿をここに置くのが普通になっています。
-
-無料planでもcompileは通ります。compile時間の上限と、同時編集の人数に制限があります。
-
-## サンプル
-
-`sample_latex/` に、第1回で見た日米自動車産業と為替の論文の原稿一式を置いてあります。AIに作らせた試作の論文です。`main.tex` が英語版の本文、`main_ja.tex` が日本語版の本文、`references.bib` が文献、`main.pdf` と `main_ja.pdf` が出来上がり（20ページと19ページ）です。図の4枚はPNGで、本文から `\includegraphics` で読み込んでいます。
-
-TeXが入っていれば、そのfolderで上の4つのcommandを走らせると `main.pdf` ができます。日本語版は `pdflatex` を `lualatex` に替え、`main` を `main_ja` にします。入っていない場合は、folderをZIPにしてOverleafの「Upload Project」に投げると開けます。日本語版はOverleafのメニューでcompilerをLuaLaTeXに替えます。
+株価を、将来の配当と売却価格の現在価値として考える話は、第7回で扱います。
 
 # この回の要点
 
-- Markdownはtext、`.docx` はZIPで固めたXMLです。差分が取れるかどうかがここで決まります。
-- PandocはMarkdownを `.docx`、HTML、PDFに変換します。体裁は変換のときに指定するので、原稿には構造だけ書きます。
-- PDFはHTMLを経由して作ります。画面用と印刷用の体裁は、どちらもCSSで書きます。
-- 論文誌の原稿はLaTeXです。この授業では使いませんが、番号付けと文献リストを自動で作る仕組みだけ見ておいてください。
+- scriptは上から全部を毎回実行します。対話モードとnotebookは、実行した変数が残ります。notebookの結果は、Restart と Run All で確かめられます。
+- `if` と `for` は `:` と字下げで範囲を示します。Pythonの番号は0から始まり、`range` は終わりを含みません。
+- 現在価値は $C/(1+r)^T$ です。何年も受け取るときは、受け取る時点を決めてから合計します。

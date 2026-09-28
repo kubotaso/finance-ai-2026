@@ -1,6 +1,6 @@
 """J-Quantsで、トヨタ自動車の2025年10月の日次株価を取得し、表と図にする。
 
-このscriptは、第8回の「Codexに取得を頼む」の依頼文をそのまま1つのPython fileにしたものです。
+このscriptは、第7回の「Codexに取得を頼む」の依頼文をそのまま1つのPython fileにしたものです。
 上から順に読むと、APIで株価を取るときに何が起きているかが分かります。
 
 実行のしかた:
@@ -136,7 +136,7 @@ print()
 #   AdjC : 調整済み終値（株式分割などをそろえた終値。円）
 bars = fetch("/equities/bars/daily", {"code": CODE, "from": START, "to": END})
 
-# Date は文字列で届くので、日付型に直してから日付順に並べます（第7回と同じ手順）。
+# Date は文字列で届くので、日付型に直してから日付順に並べます（第6回と同じ手順）。
 bars["Date"] = pd.to_datetime(bars["Date"])
 bars = bars.sort_values("Date").reset_index(drop=True)
 
