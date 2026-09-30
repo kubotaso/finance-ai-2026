@@ -68,7 +68,7 @@ file名の末尾にある `.md` や `.pdf` は拡張子（extension）です。f
 | `.py` | Pythonのprogram |
 | `.html` | browserで表示する文書 |
 
-FinderやExplorerで拡張子を表示すると、`report.md` と `report.md.txt` を区別できます。名前だけを変えても、中身の形式が変換されるわけではありません。
+FinderやExplorerで拡張子を表示すると、`report.md` と `report.md.txt` を区別できます。
 
 ## rootとユーザーフォルダ
 
@@ -238,7 +238,7 @@ Windowsでは、applicationを「管理者として実行」すると、通常�
 
 Windows標準のPowerShellには、Macと同じ `su` はありません。Windows 11 version 24H2以降にはWindows版の `sudo` もありますが、利用には有効化が必要です。
 
-管理者権限を使うと、誤った操作の影響も広がります。「アクセスが拒否されました」と出た場合は、保存先のpathと、そのfolderへの書込み権限を確認すると原因を絞れます。
+「アクセスが拒否されました」と出た場合は、保存先のpathと、そのfolderへの書込み権限を確認すると原因を絞れます。
 
 ## CodexのPermissions
 

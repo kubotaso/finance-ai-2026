@@ -13,9 +13,8 @@
 | `lecture05` | 第5回 | Python I：Jupyter、基本文法と現在価値 |
 | `lecture06` | 第6回 | Python II：CSV、pandas、plot |
 | `lecture07` | 第7回 | 株式市場・株価の決まり方とJ-Quants |
-| `lecture08` | 第8回 | 企業の資金調達・財務三表とJ-Quantsの決算取得 |
-| `lecture09` | 第9回 | 財務指標と市場評価：ROE・PBR・PER・デュポン分解 |
-| `lecture10` | 第10回 | Python III：企業データを結び、PBRとROEを比べる |
+| `lecture08` | 第8回 | J-Quantsで決算を取得し、財務三表を読む |
+| `lecture09` | 第9回 | 決算と株価から企業を比較する：ROE・PER・PBR |
 
 講義内容は、今後随時更新されます。第2回はon-demand videoの回になります。
 
