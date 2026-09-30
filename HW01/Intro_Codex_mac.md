@@ -16,10 +16,14 @@ Google Classroom（クラスコード `jinlu455`）の課題「HW01」に、次�
 
 ファイル名と提出方法は「10. Google Classroomへ提出する」にあります。
 
+### ノート：Claudeを使う場合
+
+Claudeでも、ほぼ同じ手順で進められます。ChatGPTデスクトップアプリの代わりにClaudeデスクトップアプリをインストールし、同じ `HW01` フォルダを開きます。第5節からは、Visual Studio CodeのClaude拡張機能（`anthropic.claude-code`）に移ります。指示文はそのまま使えます。第2節の音声機能だけは飛ばします。
+
 ## 1. フォルダを準備し、Codexを開く
 
 1. Finderで書類（Documents）フォルダを開きます。その中に `金融論` フォルダを作り、さらに `HW01` フォルダを作ります。
-2. 配布された [moc_text.pdf](moc_text.pdf) を `HW01` フォルダに入れます。
+2. 配布された [moc_text.pdf](模擬教科書/moc_text.pdf) を `HW01` フォルダに入れます。
 3. [ChatGPTデスクトップアプリ](https://learn.chatgpt.com/docs/quickstart)をMacにインストールします。
 4. アプリを起動し、ChatGPTアカウントでサインインします。
 5. アプリでCodexを選び、`書類（Documents）/金融論/HW01` を開きます。作業場所はPC上のフォルダを使うLocalです。
