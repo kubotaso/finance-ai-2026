@@ -8,14 +8,13 @@
 ## 保存先と原資料
 
 - reportの原稿はprojectのroot、変換後のfileは `output/` に保存する。
-- 図は `figures/`、scriptは `scripts/` に保存する。
+- 新しく作る図は `figures/`、scriptは `scripts/` に保存する。HW01で作った `data_update/` の中身は、その場所のまま使う。
 - 配布されたPDFと `data/raw/` のfileは編集、移動、上書き、削除しない。
 - projectの外にはfileを作らない。
 
-## 出所と記録
+## 出所
 
 - 数値、制度、引用には、資料名、URL、取得日を付ける。
-- AIへ依頼した作業と採用した変更を `AI_LOG.md` に記録する。
 
 ## 実行前の確認
 

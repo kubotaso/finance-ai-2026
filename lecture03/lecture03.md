@@ -6,23 +6,22 @@ date: "2026年10月8日（木）2限　金融論"
 
 # 今日作るもの
 
-HW01で作った `preview_test.md` を `preview_work.md` という名前でコピーし、見出しと表を追加します。変更箇所はdiffで、文書の表示はpreviewで確認します。最後に、作業規則と今回の記録を残します。
+HW01で作った `preview_test.md` を `preview_work.md` という名前でコピーし、見出しと文章を追加します。変更箇所はdiffで、文書の表示はpreviewで確認します。最後に、作業規則を置き、その規則に沿って文書を保存します。
 
-作業場所は自分の `Documents/金融論/HW01` です。`preview_test.md` がまだない場合は、HW01の手順書と同じく次のように頼むと作れます。
+作業場所は自分の `Documents/金融論/HW01` です。`preview_test.md` がまだない場合は、HW01の手順書と同じ次の依頼で作れます。
 
 ```text
-preview_test.mdを作って。タイトルを「Codex設定テスト」とし、CodexのModel、Effort、Speedを箇条書きで書いて。
+仙台市内の美味しい醤油ラーメンのお店を調べて、preview_test.mdに表でまとめて。
 ```
 
-完成時には、次のfileが並びます。
+今回扱うfileは次のとおりです。HW01で作った他のfileは、そのまま残ります。
 
 ```text
 HW01/
 ├── preview_test.md     HW01で作った原本
 ├── preview_work.md     今回編集するコピー
-├── AGENTS.md           作業規則
-├── AI_LOG.md           作業の記録
-└── output/
+├── AGENTS.md           今回置く作業規則
+└── output/             HW01のreportと同じ保存先
     └── rule_check.md   規則に沿って保存した文書
 ```
 
@@ -30,7 +29,7 @@ HW01/
 
 ## OSとapplication
 
-OS（Operating System）は、fileの保存、programの実行、機器や権限の管理を担います。applicationは、OSの上で動くsoftwareです。Word、browser、VS Code、Codex appなどが該当します。
+OS（Operating System）は、fileの保存、programの実行、機器や権限の管理を担います。applicationは、OSの上で動くsoftwareです。Word、browser、VS Code、ChatGPTデスクトップアプリなどが該当します。
 
 | OS | 主に使うPC・環境 | fileを見るapplication |
 |---|---|---|
@@ -151,7 +150,7 @@ MacやLinuxでは、名前が `.` で始まるfileやfolderは、通常の一覧
 
 | 名前 | 役割 |
 |---|---|
-| `.venv/` | Pythonの実行環境と、pipで入れたlibraryをまとめるfolderです。中身は第5回で扱います |
+| `.venv/` | Pythonの実行環境と、pipで入れたlibraryをまとめるfolderです。この授業では `finance-env` という名前を使います。中身は第5回で扱います |
 | `.git/` | Gitが変更履歴などを管理するfolderです |
 | `.env` | programが読む設定値を保存するfileです |
 
@@ -173,9 +172,15 @@ terminalはcommandを入力する画面です。入力を解釈するprogramをs
 
 GUIとCLIのどちらから操作しても、対象が同じなら同じfileを扱っています。
 
+## App・VS Code・Codex拡張機能
+
+Appでは、Codexとの会話を中心にfileの作成や編集を依頼します。VS Codeは、原稿を開いて編集やpreviewを行うapplicationです。Codex拡張機能を入れると、VS Codeの中からもCodexに作業を依頼できます。同じPC上の `HW01` folderを開けば、どちらからも同じfileを扱えます。
+
+この回の依頼は、VS CodeのCodex欄に入力します。原稿とCodexの回答を同じwindowで確認しながら進めます。
+
 ## VS CodeでHW01を開く
 
-VS Codeは、原稿やprogramを編集するapplicationです。「フォルダーを開く」から `HW01` を選ぶと、その中のfileが左側に並びます。
+VS Codeで、HW01のときに使った `HW01` folderを開きます。左側のExplorerに `preview_test.md` があることを確認し、今回の作業用に `preview_work.md` へコピーします。
 
 | 場所 | できること |
 |---|---|
@@ -244,7 +249,7 @@ Windows標準のPowerShellには、Macと同じ `su` はありません。Window
 
 OSの権限に加えて、Codexには作業できる範囲を決めるPermissionsがあります。sandboxは技術的にアクセスできる範囲、approvalは追加の操作を承認する仕組みです。Codex側で操作を承認しても、OSの管理者になったことにはなりません。
 
-授業では `Ask for approval` を使います。承認画面が出たときは、操作の内容、対象のfile、外部への接続や書込みを読みます。意味が分からない場合は、次のように聞くと判断材料を得られます。
+授業では基本的に `Approve for me` を使います。追加の操作は別のAIが審査します。承認画面が出たときは、操作の内容、対象のfile、外部への接続や書込みを読みます。意味が分からない場合は、次のように聞くと判断材料を得られます。
 
 ```text
 この操作が必要な理由、変更されるfile、元に戻す方法を説明して。
@@ -257,23 +262,9 @@ OSの権限に加えて、Codexには作業できる範囲を決めるPermission
 
 ## projectとthread
 
-Codex appで、自分の `HW01` folderをprojectとして開きます。この実習ではPC上のfolderで作業するLocalを使います。VS Codeで開いているfolderと同じpathなら、両方から同じfileを扱えます。
+VS Codeで開いた `HW01` folderを作業場所にして、Codex欄から依頼します。PC上のfolderで作業するLocalを使います。
 
-threadは一つの会話です。同じLocalのfolderについてthreadを分けても、fileは共通です。会話を増やすだけでは、作業用のコピーは増えません。
-
-## iPhoneからPC上のCodexへ接続する
-
-Codex Remoteを使うと、iPhoneから接続したMacまたはWindows PC上のCodexを操作できます。codeの実行やfileの読み書きはiPhoneではなく、接続先のPCで行われます。PCで使っているproject、file、設定を保ったまま、移動中などに進行状況を見たり、追加の指示を送ったりできます。
-
-### 最初の接続
-
-1. PCのChatGPT desktop appと、iPhoneのChatGPT appを最新版にします。
-2. PCで `Settings` → `Connections` → `Control this Mac or PC` を開き、`Set up` または `Add` を選びます。
-3. PCに表示されたQR codeをiPhoneで読み取ります。
-4. PCとiPhoneで同じChatGPT accountとworkspaceにsign inし、接続を承認します。
-5. iPhoneのChatGPT appで `Remote` を開き、接続したPCを選びます。
-
-接続中は、PCを起動したままinternetへ接続し、sleepしない状態にします。接続するのは、自分が所有または管理している端末に限ります。初期設定と現在の画面は、[OpenAIのCodex Remoteの説明](https://learn.chatgpt.com/docs/remote)で確認できます。
+threadは一つの会話です。同じLocalのfolderについてthreadを分けても、fileは共通です。会話を増やすだけでは、作業用のコピーは増えません。新しいthreadで続きを依頼するときは、対象のfileと、ここまでの作業を短く伝えます。
 
 ## 対象・作業・範囲・完了条件を伝える
 
@@ -282,23 +273,20 @@ Codex Remoteを使うと、iPhoneから接続したMacまたはWindows PC上のC
 | 要素 | 今回の例 |
 |---|---|
 | 対象 | `preview_work.md` |
-| 作業 | 見出しと表を追加します |
+| 作業 | 見出しと文章を追加します |
 | 範囲 | 末尾だけを変更します |
-| 完了条件 | diffを示し、表の表示を確認します |
+| 完了条件 | diffを示し、見出しと文章の表示を確認します |
 
-まず次の依頼で、コピーに見出しと表を追加します。
+まず次の依頼で、コピーに見出しと文章を追加します。
 
 ```text
-preview_work.mdの末尾だけに、次の見出しと表を追加して。
+preview_work.mdの末尾だけに、次の見出しと文章を追加して。
 既存の行と他のfileは変更しないで。
 保存後にdiffを表示して。
 
-## 今日の確認
+## お店選びのメモ
 
-| 確認 | 見るもの |
-|---|---|
-| diff | 変更行 |
-| preview | 完成時の表示 |
+まずは、大学から近いお店に行ってみたいです。
 ```
 
 ## diffで追加を確認する
@@ -306,81 +294,82 @@ preview_work.mdの末尾だけに、次の見出しと表を追加して。
 diffは、変更前と変更後のtextの差です。Codexの回答に付いた変更fileの表示から開くか、回答内のdiffを読みます。今回の追加は、次のように表示されます。
 
 ```diff
-+## 今日の確認
++## お店選びのメモ
 +
-+| 確認 | 見るもの |
-+|---|---|
-+| diff | 変更行 |
-+| preview | 完成時の表示 |
++まずは、大学から近いお店に行ってみたいです。
 ```
 
 `+` は追加を表し、画面では一般に緑色になります。行頭の `+` 自体が原稿に書き込まれるわけではありません。今回の変更では、追加先が末尾で、変更されたfileが `preview_work.md` だけであることが確認できます。
 
 ## diffで置換を確認する
 
-同じthreadで、表の1か所だけを直します。
+同じthreadで、お店選びの条件を1か所だけ直します。
 
 ```text
-preview_work.mdの表にある「変更行」だけを
-「削除された行と追加された行」に置き換えて。
+preview_work.mdの「お店選びのメモ」にある「大学から近い」だけを
+「駅から近い」に置き換えて。
 それ以外は変更しないで。保存後に今回のdiffを表示して。
 ```
 
 期待するdiffは、1行の削除と1行の追加です。
 
 ```diff
--| diff | 変更行 |
-+| diff | 削除された行と追加された行 |
+-まずは、大学から近いお店に行ってみたいです。
++まずは、駅から近いお店に行ってみたいです。
 ```
 
 `-` は削除を表し、画面では一般に赤色になります。保存後の原稿には新しい行だけが残ります。diffでは、指定した場所以外が変わっていないかも分かります。
 
+## 修正を戻して試し直す
+
+直前の置換だけを戻す場合は、同じthreadで次のように頼めます。実行すると、お店選びの条件が「大学から近い」に戻ります。
+
+```text
+preview_work.mdの「お店選びのメモ」にある「駅から近い」だけを
+「大学から近い」に戻して。それ以外は変更しないで。
+保存後に今回のdiffを表示して。
+```
+
+最初から試す場合は、原本の `preview_test.md` をもう一度コピーして `preview_work.md` を作り直します。作業用のメモがない状態から、追加と置換を試せます。次のpreviewは、置換後の「駅から近い」の状態で確認します。
+
 ## previewで完成時の表示を見る
 
-VS Codeで同じ `preview_work.md` を開きます。Macは `Shift + Command + V`、Windowsは `Ctrl + Shift + V` でMarkdownのpreviewを開けます。Command Paletteの `Markdown: Open Preview to the Side` では、原稿とpreviewを並べられます。
+VS Codeで同じ `preview_work.md` を開きます。Macは `Shift + Command + V`、Windowsは `Ctrl + Shift + V` でMarkdownのpreviewを開けます。
 
-previewでは「今日の確認」が見出しになり、2列の表が表示されます。表には見出し行と2行の内容があります。diff欄の内容は「削除された行と追加された行」です。
+Command Palette（コマンドパレット）は、VS Codeの機能を名前で検索して実行する入力欄です。Macは `Shift + Command + P`、Windowsは `Ctrl + Shift + P` で開けます。`Markdown: Open Preview to the Side` と入力して候補を選ぶと、原稿とpreviewを並べられます。
 
-| 確認方法 | 分かること |
-|---|---|
-| diff | どの文字や行を変更したか、指定外の変更がないか |
-| preview | 見出しや表が読みやすく表示されるか |
+previewでは、ラーメン店の表の下に「お店選びのメモ」という見出しが表示されます。その下の文章は「まずは、駅から近いお店に行ってみたいです。」になっています。
 
-diffの赤い行・緑の行は、完成した文書には表示されません。変更箇所をdiffで読み、現在の原稿の見た目をpreviewで確かめると、両方の確認ができます。
+# 6　作業規則を残す
 
-# 6　規則と記録を残す
+## AGENTS.md
 
-## AGENTS.mdとAI_LOG.md
-
-`AGENTS.md` は、そのprojectで繰り返し使う作業規則です。`AI_LOG.md` は、今回何を依頼し、何を採用したかを残す記録です。
-
-| file | 書く内容の例 |
-|---|---|
-| `AGENTS.md` | 原資料を保護します。生成物は `output/` に保存します |
-| `AI_LOG.md` | 表を追加し、1行を修正しました。diffとpreviewで確認しました |
+`AGENTS.md` は、そのprojectで繰り返し使う作業規則です。原資料の扱い、生成物の保存先、使うPython環境などを書きます。
 
 作業規則は短くすると、何を守るかが明確になります。今回だけの依頼はthreadへ書き、今後も共通して使う規則を `AGENTS.md` に残します。
 
 ## 規則を置き、保存結果を確かめる
 
-配布の [`sample_project/AGENTS.md`](sample_project/AGENTS.md) を `HW01` の直下へコピーします。すでに `AGENTS.md` がある場合は、その内容と配布sampleを比べ、必要な規則を追加します。
+配布の [`sample_project/AGENTS.md`](sample_project/AGENTS.md) を `HW01` の直下へコピーします。すでに `AGENTS.md` がある場合は、その内容と配布sampleを比べ、必要な規則を追加します。HW01で残したPython環境のpathも引き続き使います。
 
-`HW01` を作業場所にした新しいthreadで、次を依頼します。
+`HW01` を作業場所にした新しいthreadで、ここまでの作業内容を添えて依頼します。
 
 ```text
-このfolderのAGENTS.mdを読み、生成物の保存先と記録方法を短く説明して。
-その規則に従って、今回のpreview_work.mdで行った変更を1文にまとめた
-rule_check.mdを保存し、AI_LOG.mdに作業を追記して。
+このfolderのAGENTS.mdを読み、生成物の保存先を短く説明して。
+preview_work.mdには「お店選びのメモ」を追加し、
+「大学から近い」を「駅から近い」に置き換えました。
+現在のfileも確認し、この作業内容を1文にまとめたrule_check.mdを、
+AGENTS.mdの規則に沿った場所へ保存して。
 既存の原稿や配布資料は変更しないで。
 ```
 
-sampleの規則なら、文書は `output/rule_check.md` に保存されます。Explorerで保存先を確かめ、`AI_LOG.md` の追記を読むと、規則が実際の作業へ反映されたか分かります。
+sampleの規則なら、文書は `output/rule_check.md` に保存されます。Explorerで保存先と文書の内容を確かめると、規則が実際の作業へ反映されたか分かります。
 
 `AGENTS.md` はAIへの指示であり、アクセス制限そのものではありません。規則の読み込みの仕組みは[OpenAIのAGENTS.mdの説明](https://learn.chatgpt.com/docs/agent-configuration/agents-md)にあります。
 
 ## 自分で編集した内容をAIへ渡す
 
-VS Codeで手作業した内容は、保存するとdisk上のfileに反映されます。Macは `Command + S`、Windowsは `Ctrl + S` で保存できます。
+保存した編集内容は、Codexからも同じfileとして読めます。
 
 自分の編集を終えて保存してから、Codexに「現在のfileを読み直して」と伝えると、保存した内容をもとに作業を続けられます。一つのfileを人間とAIが同時に書き換えると変更が衝突するため、交代して編集します。
 
@@ -395,11 +384,15 @@ moc_text.pdfと照合して。
 まだfileは変更しないで。
 ```
 
-根拠と修正案を読んだ後、「その1文だけ反映して」と依頼します。保存後は、実習と同じようにdiffとpreviewを確認します。
+根拠と修正案を読んだ後、「その1文だけ反映して」と依頼します。保存後はdiffとpreviewを確認します。原稿を直したら、提出するWordも作り直すと、修正が提出物へ反映されます。
 
 # この回の要点
 
 - fileの場所はpathで表します。project rootとcurrent directoryが分かると、作業や保存の基準を確認できます。
 - root directoryは場所、root userは権限を持つユーザーです。自分の課題folderの編集は通常の権限で進められます。
 - Codexへの依頼は、対象・作業・範囲・完了条件を明確にします。
-- 修正はdiffとpreviewで確認し、規則は `AGENTS.md`、作業の記録は `AI_LOG.md` に残します。
+- 修正はdiffとpreviewで確認し、繰り返し使う作業規則は `AGENTS.md` に残します。
+
+# コラム：iPhoneからPC上のCodexへ接続する
+
+Codex Remoteを使うと、iPhoneから接続したMacまたはWindows PC上のCodexを操作できます。codeの実行やfileの読み書きはiPhoneではなく、接続先のPCで行われます。PCで使っているproject、file、設定を保ったまま、移動中などに進行状況を見たり、追加の指示を送ったりできます。接続中は、PCを起動したままinternetへ接続し、sleepしない状態にします。接続するのは、自分が所有または管理している端末に限ります。
