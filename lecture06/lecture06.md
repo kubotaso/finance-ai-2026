@@ -4,12 +4,6 @@ subtitle: "CSVと観測単位、pandasで読む、型・日付・欠損、図の
 date: "2026年10月20日（火）3限　金融論"
 ---
 
-# 使用するデータ
-
-配布CSVの日付は、東証の実際の営業日（土日・祝日・年末年始を除く）です。価格は架空です。価格の変化率には配当を含めません。
-
-図の点は `Code` と `Date` で原表へ戻ります。CSVの物理行番号を使う場合は、読込直後に `source_row` を保存すると並べ替え後も追えます。indexに2を足す方法は、元の行順を保持している場合だけ使えます。
-
 
 # この回で扱うこと
 
@@ -17,12 +11,34 @@ date: "2026年10月20日（火）3限　金融論"
 - pandasで読む、列と行を選ぶ
 - 型・日付・欠損・並べ替え
 - matplotlibで図を描き、図の1点をCSVの行まで戻る
-- 読み込みと作図を関数にまとめる
 - 同じ処理をCodexに頼む書き方
 
 この回のcodeは、自分で打つ場合と、Codexに頼んで書かせる場合の両方を載せています。Codexに頼むときの指示文は、各節の `text` の枠にあります。どちらの場合も、出てきた表や図が正しいかを確かめるのは自分です。何を確かめるかは、codeを読める人のほうが早く決められます。
 
-手を動かして確認できる教材は `workbook/workbook.ipynb` です。使うデータは `workbook/data/` の2つのCSVです。「やってみる」の答え合わせは、Codexに頼めます。`workbook/workbook.py` は、同じ処理をscriptとして上から実行できる形にしたものです。VS Codeで開いて試したい行をマウスで選び、Shift+Enter を押すと、選んだ部分だけをterminalで動かせます。
+# 実習の準備
+
+この回は、Documents（書類）に自分の作業用フォルダ `lecture06` を作り、空のnotebookにcodeを書き足して進めます。
+
+`lecture06` の中に `data` フォルダを作ります。配布資料の `workbook/data/` にある `prices.csv` と `prices_short.csv` を、その中にコピーします。
+
+VS Codeの「ファイル」→「フォルダーを開く」で、Documentsの `lecture06` を開きます。左のファイル一覧で「新しいファイル」から `lecture06.ipynb` を作ると、空のnotebookが開きます。右上の `Select Kernel` から、HW01で使った `finance-env` を選びます。
+
+準備ができると、ファイルは次の配置になります。
+
+```text
+Documents/
+└── lecture06/
+    ├── lecture06.ipynb
+    └── data/
+        ├── prices.csv
+        └── prices_short.csv
+```
+
+本文のPython codeをcode cellに入力し、Shift+Enterで実行すると、結果がcellの下に出ます。`+ Code` でcellを追加できます。⌘S（WindowsはCtrl+S）で保存すると、codeと結果が `lecture06.ipynb` に残ります。
+
+この配置なら、本文の `data/prices.csv` や `data/prices_short.csv` は、notebookと同じフォルダにある `data` の中のfileを指します。
+
+配布資料の `workbook/workbook.ipynb` には、同じ処理と追加の練習が入っています。「やってみる」の答え合わせは、Codexに頼めます。`workbook/workbook.py` は、同じ処理をscriptとして上から実行できる形にしたものです。
 
 # 練習用の株価CSV
 
@@ -56,9 +72,11 @@ Date,Code,C,Vo
 
 VS Codeで開くと、書かれている文字がそのまま見えます。Excelで開くと、Excelが値を解釈して表示します。`01110` は数の1110に、`2024-08-05` は日付に、`"2,467"` は数の2467になります。Excelで上書き保存すると、解釈された形でfileが書き換わります。
 
-## 同じ表をJSONで書くと
+## JSONとは
 
-表を文字で書く形式は、CSVだけではありません。上と同じ2行をJSONで書くと、次のようになります。
+JSON（JavaScript Object Notation）は、データを「名前と値の組」や「値の並び」で表すtext形式です。fileに保存したり、APIでデータを受け渡したりするときに使います。名前にJavaScriptとありますが、Pythonなど多くの言語で読み書きできます。
+
+上のCSVと同じ2行をJSONで書くと、次のようになります。
 
 ```json
 {"data": [
@@ -89,6 +107,14 @@ CSVと比べると、値の種類の扱いが違います。
 
 1行を1日にして、銘柄ごとに列を並べる形もあります。今回の表は、銘柄と日付の組が1行で、列は価格や出来高の種類です。J-Quantsから取得する表も、この形です。
 
+## pandasとは
+
+pandas（パンダス）は、Pythonで表のデータを読み込み、整理し、集計するためのlibraryです。libraryは、よく使う処理をまとめたcodeの集まりです。Python本体にpandasを追加すると、CSVやExcelのfileを読み、行や列を選び、平均や合計を求める機能を使えます。
+
+たとえば株価の表なら、ある銘柄の行だけを取り出す、日付順に並べる、前日からの変化率を計算する、といった処理ができます。数値だけでなく、銘柄名のような文字列、日付、欠けた値も扱えます。
+
+Excelではcellを選んだり数式を入力したりして表を操作します。pandasでは、その操作をPythonのcodeで書きます。codeを保存しておけば、新しいデータにも同じ処理をまとめて実行できます。この回では、株価CSVをpandasで整理し、その結果をmatplotlibに渡して図を描きます。
+
 ## fileとDataFrame
 
 DataFrameは、pandasが表を扱うためのデータの形です。行と列があり、列ごとに名前と型（整数、小数、文字列、日付）を持ちます。Excelのシートに似ていますが、列全体をまとめて計算したり、条件に合う行だけを取り出したりする操作が、1行のcodeでできます。第5回のlistが「値の並び」だとすれば、DataFrameは「名前の付いた列の並び」です。
@@ -101,7 +127,7 @@ CSV fileは、diskに保存された文字の並びです。pandasで読むと�
 
 ## import と read_csv
 
-pandasは、表を扱うためのlibraryです。第5回のとおり、HW01で `finance-env` に入れてあるものを `import` で読み込みます。`pd` は慣例の略です。
+HW01で `finance-env` に入れたpandasを、`import` で読み込みます。`pd` は慣例の略です。
 
 ```python
 import pandas as pd
@@ -113,7 +139,7 @@ short = pd.read_csv("data/prices_short.csv")
 
 `short.head()` は先頭の5行、`short.shape` は行数と列数、`short.dtypes` は列ごとの型を返します。何も指定せずに `prices_short.csv` を読むと、`shape` は `(9, 4)` です。`Code` は `int64`（整数）で、`01110` が `1110` になっています。`C` は `"2,467"` に `,` が入っているので、`object`（文字列）です。
 
-Codexに頼むなら、workbookのfolderを開いて次のように書きます。
+Codexに頼むなら、作業用の `lecture06` フォルダを開いた状態で次のように書きます。
 
 ```text
 data/prices_short.csvをpandasで読んで、先頭5行、行数と列数、列ごとの型を表示して。
@@ -186,6 +212,16 @@ data/prices_short.csvを、Codeは文字列、Dateは日付型、Cは「,」を�
 ## 並べ替え
 
 `prices_short.csv` は新しい日付が上にあります。`sort_values(["Code", "Date"])` は、まず銘柄で、同じ銘柄の中では日付で並べます。前の日との変化率は、この並びを前提に計算します。
+
+Codexに頼むなら、次のように書きます。
+
+```text
+shortを、Codeの昇順、同じCodeの中ではDateの古い順に並べ替えて。
+Dateが文字列なら、日付型に変換してから並べ替えて。
+結果をshortに保存し、Code、Date、C、Voの列を表示して。
+```
+
+表示された表で、同じ銘柄の行がまとまり、その中で日付が古い順に並んでいることを確かめます。
 
 ## 欠損と0
 
@@ -338,31 +374,6 @@ Auto AのAdjCが最大の行を、行番号、日付、値とともに表示し�
 ```
 
 VS Codeでその行を開き、同じ値が並んでいることを自分の目で確かめます。図とDataFrameとCSVが同じ1点を指すことは、Codexの答えではなく、fileを開いて確かめます。
-
-# 関数にまとめる
-
-ワークブックの7節では、読み込みと作図を2つの関数にします。
-
-```python
-def load_prices(path):
-    frame = pd.read_csv(path, dtype={"Code": str}, parse_dates=["Date"])
-    frame = frame.sort_values(["Code", "Date"]).reset_index(drop=True)
-    return frame
-```
-
-`plot_normalized(df, codes, start, end)` は、表・銘柄のlist・期間を受け取り、期間の最初の取引日を100にそろえた図を描きます。中で使う列は `Date`、`Code`、`AdjC` だけです。第7回にJ-Quantsから取得する表にもこの3列があるので、関数を書き換えずに使えます。
-
-中身は第5回と同じ `def`、`for`、`return` です。引数を変えると、同じ処理が別の銘柄・期間に使えます。
-
-関数にまとめる作業は、Codexに頼むと速く済みます。
-
-```text
-CSVのpathを受け取り、Codeを文字列、Dateを日付型で読んで、CodeとDateで並べ替えて返す関数load_pricesを作って。
-表、銘柄コードのlist、開始日、終了日を受け取り、期間の最初の取引日を100にしたAdjCの図を描く関数plot_normalizedも作って。
-どちらもnotebookのcellに書いて、3社の図を描いて。
-```
-
-作られた関数は、引数を変えて2回呼び、違う図が出ることを確かめます。第7回では、この関数にJ-Quantsの表をそのまま渡します。
 
 notebookの最後では、Restart と Run All で上から全部を実行し直します。CSVを読む、型を直す、並べ替える、図を描く、の順に実行され、同じ表と図がもう一度できます。
 

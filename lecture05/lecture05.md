@@ -170,21 +170,29 @@ notebookでは、右上の `Select Kernel`（選択済みならkernel名）を�
 
 ## notebookの実行順序
 
-notebookでは、画面に見えているcodeと、kernelの中の変数が食い違うことがあります。
+新しいnotebookを作り、cellを動かす順番で結果がどう変わるかを試します。
+
+VS Codeの左のファイル一覧で `workbook` フォルダを選び、「新しいファイル」から `lecture05_live.ipynb` を作ると、空のnotebookが開きます。右上の `Select Kernel` から `finance-env` を選びます。
+
+最初のcode cellに次のcodeを入力し、Shift+Enterで実行します。
 
 ```python
 # cell 1
 price = 100
 ```
 
+次のcode cellに以下を入力し、Shift+Enterで実行すると `200` が出ます。cellは上部の `+ Code` でも追加できます。
+
 ```python
 # cell 2
 price * 2
 ```
 
-cell 1とcell 2を実行すると `200` が出ます。次にcell 1を `price = 300` に書き換え、cell 1は実行せずにcell 2だけ実行すると、やはり `200` が出ます。kernelの中の `price` は100のままだからです。
+次にcell 1を `price = 300` に書き換え、cell 1は実行せずにcell 2だけ実行すると、やはり `200` が出ます。kernelの中の `price` は100のままだからです。cell 1を実行してからcell 2を実行すると、結果は `600` に変わります。
 
-表示されているcodeと結果が合っているかは、kernelを再起動して上から全部実行し直すと確かめられます。 VS Codeでは、notebookの上部にある Restart を押してから Run All を押します。この操作は、scriptを実行するのと同じことをnotebookでやっていることになります。
+notebookの上部にある `Restart` を押してから `Run All` を押すと、変数が空の状態から画面のcodeを上から順に実行します。この例では `600` が出ます。表示されているcodeと結果をそろえられます。
+
+⌘S（WindowsはCtrl+S）で保存すると、入力したcodeと実行結果が `lecture05_live.ipynb` に残ります。
 
 ## この授業での使い分け
 
