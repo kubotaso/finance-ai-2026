@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja" xml:lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>第7回　株式市場・株価の決まり方とJ-Quants</title>
+  <style>
+
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+  <style type="text/css">
+:root { --ink:#17233c; --navy:#173a68; --red:#b23a48; --gray:#6b7280; --bg:#ffffff; --band:#f3f6fa; }
+html { font-size: 20px; }
+body { max-width: 48rem; margin: 0 auto; padding: 2rem 1.2rem 6rem; font-family: "Hiragino Sans","Yu Gothic",sans-serif;
+line-height: 1.85; color: var(--ink); background: var(--bg); }
+h1 { font-size: 1.9rem; color: var(--navy); margin-top: 3.2rem; padding-top: 1rem; border-top: 4px solid var(--navy); line-height: 1.3; clear: both; }
+h2 { font-size: 1.35rem; color: var(--navy); margin-top: 2.4rem; }
+h3 { font-size: 1.1rem; color: var(--navy); margin-top: 1.8rem; }
+header#title-block-header h1 { border: 0; margin-top: 0; font-size: 2.2rem; }
+p { margin: 0.9rem 0; }
+strong { color: var(--red); font-weight: 600; }
+blockquote { border-left: 5px solid var(--navy); background: var(--band); margin: 1.2rem 0; padding: 0.6rem 1rem; }
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; margin: 1rem 0; clear: both; }
+th, td { border-bottom: 1px solid #d5dbe5; padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; }
+th { background: #e8eef6; color: var(--navy); }
+figure img { width: 100%; height: auto; display: block; border-radius: 4px; }
+figcaption { font-size: 0.78rem; color: var(--gray); margin-top: 0.4rem; line-height: 1.5; }
+
+figure.chart { width: 100%; clear: both; margin: 1.6rem 0; }
+
+figure.photo, figure.poster { width: 36%; float: right; clear: right; margin: 0.2rem 0 1rem 1.5rem; }
+figure.photo img { aspect-ratio: 3 / 2; object-fit: cover; object-position: center top; }
+figure.poster img { aspect-ratio: 1 / 1; object-fit: cover; object-position: center; }
+.math.display { clear: both; }
+details { background: var(--band); padding: 0.6rem 1rem; margin: 1rem 0; border-radius: 4px; clear: both; }
+details summary { cursor: pointer; color: var(--navy); font-weight: 600; }
+code { font-family: "SF Mono", Menlo, monospace; font-size: 0.85em; background: #eef1f6; padding: 0 0.25em; }
+pre { background: #f6f8fb; padding: 0.8rem 1rem; overflow-x: auto; font-size: 0.72rem; line-height: 1.5; clear: both; }
+pre code { background: none; padding: 0; }
+nav#TOC { background: var(--band); padding: 0.8rem 1.2rem; border-radius: 4px; font-size: 0.9rem; }
+nav#TOC ul { margin: 0.2rem 0; padding-left: 1.2rem; }
+.timebox { color: var(--gray); font-size: 0.85rem; }
+@media print {
+html { font-size: 11pt; }
+body { max-width: 100%; padding: 0; }
+figure { break-inside: avoid; }
+figure.photo, figure.poster { width: 32%; }
+h1[id^='附録'] { break-before: page; }
+pre { font-size: 7.5pt; white-space: pre-wrap; }
+details { display: block; } details summary { display: none; }
+}
+</style>
+  <style type="text/css">
+@page {
+size: A4;
+margin: 17mm 16mm 18mm;
+@bottom-center {
+content: counter(page) " / " counter(pages);
+font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+font-size: 8pt;
+color: #6b7280;
+}
+}
+@media print {
+* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+html { font-size: 10pt; }
+body { max-width: none; margin: 0; padding: 0; line-height: 1.75; color: #17233c;
+hyphens: manual; }
+
+header#title-block-header { margin: 0 0 8mm; padding-bottom: 4mm;
+border-bottom: 1.5pt solid var(--navy); }
+header#title-block-header h1 { font-size: 17pt; margin: 0 0 2mm; padding: 0; }
+header#title-block-header .subtitle { font-size: 11pt; color: var(--navy); margin: 0 0 2mm; }
+header#title-block-header .date { font-size: 9pt; color: var(--gray); margin: 0; }
+nav#TOC { display: none; }
+
+h1 { font-size: 14pt; margin: 9mm 0 3mm; padding-top: 2.5mm; border-top-width: 2pt; }
+h2 { font-size: 11.5pt; margin: 6mm 0 2mm; }
+h3 { font-size: 10.5pt; margin: 5mm 0 1.5mm; }
+h1, h2, h3 { break-after: avoid-page; break-inside: avoid; }
+p, li { orphans: 3; widows: 3; }
+p { margin: 2mm 0; }
+a { color: inherit; text-decoration: none; }
+
+table { font-size: 8.5pt; margin: 3mm 0; line-height: 1.45; break-inside: avoid; }
+thead { display: table-header-group; }
+tr { break-inside: avoid; }
+th, td { padding: 1mm 2mm; }
+
+pre { font-size: 8pt; line-height: 1.45; padding: 2.5mm 3.5mm; margin: 3mm 0;
+white-space: pre-wrap; overflow: visible; border-left: 2pt solid #c9d3e3;
+break-inside: avoid; }
+code { font-size: 0.9em; }
+
+figure { break-inside: avoid; margin: 4mm 0; text-align: center; }
+figure img { width: auto; max-width: 100%; max-height: 95mm; margin: 0 auto; border-radius: 0; }
+figcaption { font-size: 8pt; text-align: left; }
+
+div.columns { display: flex; gap: 6mm; break-inside: avoid; }
+div.column { flex: 1 1 0; overflow: visible; }
+div.column p { margin: 1mm 0; font-size: 9pt; }
+.math.display { break-inside: avoid; }
+details { display: block; } details summary { display: none; }
+}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">第7回　株式市場・株価の決まり方とJ-Quants</h1>
+<p class="subtitle">取引価格と価値評価／APIで株価の表と図を作る</p>
+<p class="date">2026年10月27日（火）3限　金融論</p>
+</header>
+<h1 id="この回で扱うこと">この回で扱うこと</h1>
+<p>株式市場の仕組みを学び、将来の配当・売却代金から株式の評価額を計算します。その後、J-QuantsのAPIから1社の株価を取得し、表と図にします。</p>
+<ul>
+<li>株式と市場の基礎、日本の株式市場</li>
+<li>将来の受取額と現在価値</li>
+<li>割引率や予想配当を変えて評価額を比べる</li>
+<li>APIとは何か、J-Quantsで株価の表と図を作る</li>
+</ul>
+<p>計算と取得はCodexに頼みます。この回の <code>text</code> の枠がその依頼文です。出てきた表や図のどこを確かめるかは、各節の依頼文の下に書いてあります。評価額の計算は第5回の <code>present_value</code> と同じ式なので、自分でPythonを書いても同じ結果になります。株価の取得は、3節の依頼文をそのまま1つのscriptにした <code>toyota_oct2025.py</code> を配ります。Codexが書くcodeの手本として読めます。</p>
+<h1 id="株式と市場">1. 株式と市場</h1>
+<h2 id="株を買うとは">株を買うとは</h2>
+<p>株式は、会社の持分です。普通株の株主には、株主総会で議決に参加する権利、配当を受け取る権利、会社を清算したときに残った財産の分配を受ける権利があります。配当の金額は決まっておらず、配当がない年もあります。会社が倒産した場合、株主に財産が残らないこともあります。</p>
+<p>会社が新しい株を発行して投資家に買ってもらうと、会社に資金が入ります。一方、取引所で既存の株を買うと、代金はその株を売った投資家に渡ります。日々の株式売買と、会社が直接資金を調達する場面は別です。</p>
+<p>株式を売れる市場があると、投資家は必要なときに現金へ戻しやすくなります。会社が資金を集める仕組みを、流通市場が支えています。</p>
+<p>普通株式には、あらかじめ定めた満期や固定利息がありません。株主の責任は原則として出資額の範囲に限られ、会社の借金を株主個人が追加で返す義務は負いません。これが有限責任です。</p>
+<h2 id="上場増資株式分割">上場、増資、株式分割</h2>
+<p>会社へ新しい資金が入るかどうかに着目すると整理できます。</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>言葉</th>
+<th>何が変わるか</th>
+<th>会社に資金が入るか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>上場</td>
+<td>取引所で株式を売買できるようになります</td>
+<td>上場そのものとは別に、新株の公募を伴えばその払込金が入ります</td>
+</tr>
+<tr>
+<td>公募増資</td>
+<td>広く投資家を募り、新株を発行します</td>
+<td>入ります</td>
+</tr>
+<tr>
+<td>第三者割当増資</td>
+<td>特定の相手に新株を割り当てます</td>
+<td>払込みを受けます</td>
+</tr>
+<tr>
+<td>株式分割</td>
+<td>1株を複数株に分けます</td>
+<td>分割だけでは入りません</td>
+</tr>
+</tbody>
+</table>
+<p>上場時に既存の株主が持ち株を売り出す場合、その代金は売った株主へ渡ります。会社による新株発行とは区別します。資金調達と財務諸表への記録は第8回で詳しく扱います。</p>
+<h2 id="日本の株式市場">日本の株式市場</h2>
+<p>日本の株式のほぼ全部は、東京証券取引所（東証）で売買されています。東証は日本取引所グループ（JPX）の一部で、同じグループに先物やオプションを扱う大阪取引所があります。名古屋・札幌・福岡にも取引所がありますが、単独上場の会社は少数です。3節で使うJ-Quantsを運営するJPX総研も、このグループの会社です。</p>
+<p>東証の市場は、2022年4月からプライム・スタンダード・グロースの3つに分かれています。プライムは大きな会社向け、グロースは上場して間もない成長企業向けで、上場の基準が違います。上場会社数は次のとおりです。</p>
+<table>
+<thead>
+<tr>
+<th>市場</th>
+<th style="text-align: right;">上場会社数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>プライム</td>
+<td style="text-align: right;">1,548</td>
+</tr>
+<tr>
+<td>スタンダード</td>
+<td style="text-align: right;">1,562</td>
+</tr>
+<tr>
+<td>グロース</td>
+<td style="text-align: right;">599</td>
+</tr>
+<tr>
+<td>合計（TOKYO PRO Marketを含む）</td>
+<td style="text-align: right;">3,897</td>
+</tr>
+</tbody>
+</table>
+<p>出所：JPX「上場会社数・上場株式数」、2026年9月18日時点。</p>
+<p>取引は、平日の9時から11時30分（前場）と12時30分から15時30分（後場）に行われます。土日、祝日、12月31日から1月3日は休みです。売買の単位は100株です。株価1,000円の株なら、最低10万円からの取引になります。約定した売買の代金と株式の受け渡しは、約定日の2営業日後です。</p>
+<p>上場会社には4桁の証券コードが付いています。トヨタ自動車は7203、日産自動車は7201、イオンは8267です。J-Quantsのデータでは末尾に0を付けた5桁（72030）で表されます。第6回の架空データの <code>01110</code> も、この5桁の形に合わせたものです。</p>
+<p>投資家の顔ぶれでは、売買代金の6割前後を海外の投資家が占めています。保有では、海外投資家、信託銀行（年金や投資信託の資産を預かる）、事業会社、個人がそれぞれ1〜3割です。売買の主役と持ち主が違うことは、株価の動きを読むときに頭に入れておく点です。</p>
+<h2 id="株価は注文が出会って決まる">株価は注文が出会って決まる</h2>
+<p>売りたい人と買いたい人が、価格と数量を指定して注文します。価格を指定する注文を指値注文、価格を指定せず売買する注文を成行注文といいます。成行注文では、画面で見た直前の株価と違う価格で約定することがあります。</p>
+<p>次は、取引時間中の注文を簡略化した架空の例です。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">売りたい数量</th>
+<th style="text-align: right;">価格</th>
+<th style="text-align: right;">買いたい数量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">200株</td>
+<td style="text-align: right;">1,010円</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">100株</td>
+<td style="text-align: right;">1,005円</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">1,000円</td>
+<td style="text-align: right;">300株</td>
+</tr>
+<tr>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">995円</td>
+<td style="text-align: right;">200株</td>
+</tr>
+</tbody>
+</table>
+<p>最も安い売り注文は1,005円、最も高い買い注文は1,000円です。この状態では条件が合わず、まだ取引は成立しません。新たに100株の成行買い注文が来れば、他の注文が変わらない限り、1,005円の売り注文と取引が成立します。</p>
+<p>買いたい数量が増えると、安い売り注文から順に取引され、より高い価格へ進むことがあります。売りが増える場合は逆です。実際には注文の追加・取消しが続きます。寄付きや引けでは、注文をまとめて処理する仕組みも使われます。</p>
+<p>「市場が株価を決める」とは、誰かが会社の正しい価値を計算して公表するという意味ではありません。異なる予想を持つ人の注文が出会い、取引価格が記録されるという意味です。</p>
+<h2 id="株価と時価総額">株価と時価総額</h2>
+<p>株価は1株の価格です。会社の株式全体に対する市場評価を見るときは、時価総額を使います。</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">時価総額</mtext><mo>=</mo><mtext mathvariant="normal">株価</mtext><mo>×</mo><mtext mathvariant="normal">発行済株式数</mtext></mrow><annotation encoding="application/x-tex">
+\text{時価総額} = \text{株価} \times \text{発行済株式数}
+</annotation></semantics></math></p>
+<table>
+<thead>
+<tr>
+<th>架空の会社</th>
+<th style="text-align: right;">株価</th>
+<th style="text-align: right;">発行済株式数</th>
+<th style="text-align: right;">時価総額</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A社</td>
+<td style="text-align: right;">1,000円</td>
+<td style="text-align: right;">1億株</td>
+<td style="text-align: right;">1,000億円</td>
+</tr>
+<tr>
+<td>B社</td>
+<td style="text-align: right;">5,000円</td>
+<td style="text-align: right;">1,000万株</td>
+<td style="text-align: right;">500億円</td>
+</tr>
+</tbody>
+</table>
+<p>B社の株価は高くても、時価総額はA社より小さくなっています。</p>
+<p>1株を2株に分ける株式分割では、株数が2倍になり、他の条件が変わらなければ1株の価格は半分になります。株主が持つ株式全体の価値は、それだけでは変わりません。長い期間の株価を比べるときに「調整済み」という列が必要になる理由です。</p>
+<h2 id="株価指数は市場全体を見る物差し">株価指数は市場全体を見る物差し</h2>
+<p>TOPIXや日経平均株価は、複数の銘柄の値動きをまとめた指標です。日経平均株価は、日本経済新聞社がプライム市場から選んだ225銘柄の株価を平均したもので、株価の高い銘柄の影響が大きくなります。TOPIXは、東証が算出する時価総額で重みを付けた指数で、対象は約2,000銘柄です。1社の株価が下がった日でも、市場全体が下がったのか、その会社だけが下がったのかで読み方が違います。指数によって対象銘柄や重みの付け方が違うため、値動きも一致しません。今回は指数を作る計算には立ち入りません。</p>
+<h1 id="将来の受取額から株式を評価する">2. 将来の受取額から株式を評価する</h1>
+<h2 id="株主が受け取るお金">株主が受け取るお金</h2>
+<p>株式を持つ間には配当を、売るときには売却代金を受け取ります。配当は会社が株主に分配するお金です。会社の利益のすべてが配当になるわけではなく、事業のために会社に残す分もあります。</p>
+<p>配当の金額や回数は会社によって異なります。年1回の会社も、中間配当と期末配当の年2回に分ける会社もあります。毎年必ず受け取れるわけではなく、配当が減ったり、なくなったりすることもあります。</p>
+<p>例えば、1株当たりの中間配当が20円、期末配当が30円なら、両方の対象となる100株について、税引前で2,000円と3,000円、年間合計5,000円を受け取ります。対象となる株主を決める日が権利確定日で、実際の支払日はそれより後です。<a href="https://www.jpx.co.jp/corporate/investor-relations/individual/shareholder/">日本取引所グループ</a>では、3月末と9月末の株主を対象に年2回の配当を行っています。</p>
+<h2 id="年後の受取額を今日の価値に直す">1年後の受取額を今日の価値に直す</h2>
+<p>将来受け取るお金を今日の価値に直したものを、現在価値といいます。今日の100円が年5%で増えると、1年後には105円になります。逆に、1年後の105円を5%で割り引くと、今日の100円に相当します。</p>
+<p>株式でも、予想する配当と売却代金を割り引いて評価します。割引率は、その株式のリスクを引き受ける投資家が求める収益率です。以下では計算用に5%と仮定します。手数料と税金は省きます。</p>
+<p>架空の株式1株について、1年後に配当5円を受け取り、その直後に107円で売ると予想します。1年後の受取額は合計112円なので、今日の評価額は次のようになります。</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mn>0</mn></msub><mo>=</mo><mfrac><mrow><mn>5</mn><mo>+</mo><mn>107</mn></mrow><mn>1.05</mn></mfrac><mo>≃</mo><mn>106.67</mn><mtext mathvariant="normal">円</mtext></mrow><annotation encoding="application/x-tex">
+V_0 = \frac{5+107}{1.05} \simeq 106.67\text{円}
+</annotation></semantics></math></p>
+<p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>V</mi><mn>0</mn></msub><annotation encoding="application/x-tex">V_0</annotation></semantics></math> は今日の評価額です。106.67円は、この予想と割引率から計算した値であり、市場で実際に売買される価格とは限りません。配当も売却価格も、予想どおりになるとは限りません。</p>
+<p>第5回の <code>present_value</code> で書くと、次の2行です。</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> present_value(amount, rate, years):</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> amount <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> rate) <span class="op">**</span> years</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">round</span>(present_value(<span class="dv">5</span> <span class="op">+</span> <span class="dv">107</span>, <span class="fl">0.05</span>, <span class="dv">1</span>), <span class="dv">2</span>))   <span class="co"># 106.67</span></span></code></pre></div>
+<h2 id="予想や割引率を変えると評価額が変わる">予想や割引率を変えると評価額が変わる</h2>
+<p>同じ1年後の受取りについて、条件を変えて計算します。</p>
+<table>
+<thead>
+<tr>
+<th>条件</th>
+<th style="text-align: right;">予想配当</th>
+<th style="text-align: right;">予想売却価格</th>
+<th style="text-align: right;">割引率</th>
+<th style="text-align: right;">今日の評価額</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>基準</td>
+<td style="text-align: right;">5円</td>
+<td style="text-align: right;">107円</td>
+<td style="text-align: right;">5%</td>
+<td style="text-align: right;">106.67円</td>
+</tr>
+<tr>
+<td>割引率だけを変更</td>
+<td style="text-align: right;">5円</td>
+<td style="text-align: right;">107円</td>
+<td style="text-align: right;">10%</td>
+<td style="text-align: right;">101.82円</td>
+</tr>
+<tr>
+<td>配当だけを変更</td>
+<td style="text-align: right;">8円</td>
+<td style="text-align: right;">107円</td>
+<td style="text-align: right;">5%</td>
+<td style="text-align: right;">109.52円</td>
+</tr>
+<tr>
+<td>配当と売却価格を変更</td>
+<td style="text-align: right;">8円</td>
+<td style="text-align: right;">113円</td>
+<td style="text-align: right;">5%</td>
+<td style="text-align: right;">115.24円</td>
+</tr>
+</tbody>
+</table>
+<p>ほかの条件が同じなら、予想する受取額が大きいほど評価額は高くなります。同じ受取額でも、高い収益率を求めるほど、今日支払ってよいと考える金額は低くなります。</p>
+<p>投資家によって予想や求める収益率が違うため、同じ株式でも評価額は異なります。</p>
+<p>この表をCodexに作らせるなら、次のように頼みます。</p>
+<pre class="text"><code>架空の株式1株について、1年後に配当5円を受け取り、その直後に107円で売ると予想している。
+割引率5%と10%で今日の評価額をPythonで計算し、条件と結果を表にして。
+配当を8円にした場合と、配当8円・売却価格113円の場合も同じ表に加えて。
+手数料と税金は省き、計算式と結果の意味も短く説明して。
+コードと結果を保存して。</code></pre>
+<p>返ってきた表で、配当と売却代金がどちらも1年後の受取りとして1回だけ割り引かれているか、基準の行が106.67円になっているかを見ます。違っていたら、その箇所と意図した条件を伝えて直してもらいます。「なぜ割引率を上げると評価額が下がるのか、この数値で説明して」と頼むと、表の読み方も返ってきます。</p>
+<h2 id="複数年持つ場合は受け取る年ごとに割り引く">複数年持つ場合は、受け取る年ごとに割り引く</h2>
+<p>3年間持ち、毎年末に1株当たり5円の配当を受け取り、3年後の配当受取直後に107円で売ると予想します。割引率が年5%なら、評価額は次のようになります。</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mn>0</mn></msub><mo>=</mo><mfrac><mn>5</mn><mn>1.05</mn></mfrac><mo>+</mo><mfrac><mn>5</mn><msup><mn>1.05</mn><mn>2</mn></msup></mfrac><mo>+</mo><mfrac><mrow><mn>5</mn><mo>+</mo><mn>107</mn></mrow><msup><mn>1.05</mn><mn>3</mn></msup></mfrac><mo>≃</mo><mn>106.05</mn><mtext mathvariant="normal">円</mtext></mrow><annotation encoding="application/x-tex">
+V_0 = \frac{5}{1.05} + \frac{5}{1.05^2} + \frac{5+107}{1.05^3}
+\simeq 106.05\text{円}
+</annotation></semantics></math></p>
+<p>1年後の配当は1年分、2年後の配当は2年分、3年後の配当と売却代金は3年分割り引きます。ここでは計算を簡単にするため、1年分の配当を各年末にまとめて受け取ると仮定しています。</p>
+<p>保有期間を <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math> 年、<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math> 年後の予想配当を <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>D</mi><mi>t</mi></msub><annotation encoding="application/x-tex">D_t</annotation></semantics></math>、最後の配当受取後の予想売却価格を <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mi>T</mi></msub><annotation encoding="application/x-tex">P_T</annotation></semantics></math>、一定の割引率を <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>r</mi><annotation encoding="application/x-tex">r</annotation></semantics></math> とすると、同じ計算を次の式で表せます。</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mn>0</mn></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow><mi>T</mi></munderover><mfrac><msub><mi>D</mi><mi>t</mi></msub><mrow><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>+</mo><mi>r</mi><msup><mo stretchy="false" form="postfix">)</mo><mi>t</mi></msup></mrow></mfrac><mo>+</mo><mfrac><msub><mi>P</mi><mi>T</mi></msub><mrow><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>+</mo><mi>r</mi><msup><mo stretchy="false" form="postfix">)</mo><mi>T</mi></msup></mrow></mfrac></mrow><annotation encoding="application/x-tex">
+V_0 = \sum_{t=1}^{T} \frac{D_t}{(1+r)^t} + \frac{P_T}{(1+r)^T}
+</annotation></semantics></math></p>
+<p>各年の配当を割り引いて足し、最後に売却代金の現在価値を足しています。売った後の配当は、その株式を買った人が受け取るため、ここには加えません。第5回の7-3で、毎年1万円を5年間受け取る現在価値を <code>for</code> で足したのと同じ計算です。</p>
+<pre class="text"><code>毎年末に5円の配当を受け取り、3年後の配当受取直後に107円で売る場合の今日の評価額を、
+割引率5%で計算して。年ごとの現在価値と合計を表にして。</code></pre>
+<p>年ごとの行が3つあり、3年目の行だけ配当と売却価格の両方が入っていて、合計が106.05円になっていれば正しく計算されています。</p>
+<h2 id="実際に得た収益率を計算する">実際に得た収益率を計算する</h2>
+<p>購入後に実際に得た収益率は、購入価格と受取額から計算します。100円で買い、1年後に配当5円を受け取り、107円で売れた場合、収益率は12%です。</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><mn>5</mn><mo>+</mo><mn>107</mn><mo>−</mo><mn>100</mn></mrow><mn>100</mn></mfrac><mo>=</mo><mn>0.12</mn></mrow><annotation encoding="application/x-tex">
+\frac{5+107-100}{100}=0.12
+</annotation></semantics></math></p>
+<p>配当5円と値上がり益7円を、支払った100円で割っています。先ほどの評価計算は、将来の予想から今日の評価額を求めるものでした。こちらは、実際の購入価格と受取額から運用の結果を求める計算です。</p>
+<h1 id="apiで株価を取得する">3. APIで株価を取得する</h1>
+<h2 id="apiはプログラム同士をつなぐ窓口">APIはプログラム同士をつなぐ窓口</h2>
+<p>APIはApplication Programming Interfaceの略で、あるプログラムの機能やデータを、別のプログラムから利用するための窓口です。何をどの形式で渡すと、どのような結果が返るかが決められています。天気の取得、地図の検索、文章の翻訳などにも使われます。</p>
+<p>この授業では、インターネットを通じてサービスに依頼を送るWeb APIを使います。ブラウザでは人が入力欄やボタンを操作しますが、Web APIではプログラムが決められた形式で依頼を送ります。この依頼をリクエスト、サービスからの返答をレスポンスと呼びます。リクエストの中身は、URLに条件を付けたものです。例えば「銘柄コード72030、2025年10月1日から31日まで」という条件を付けて送ると、その条件に合う日々の株価が返ってきます。</p>
+<p>返答は、人が読む画面ではなく、第6回で見たJSONの形式で届きます。1日分が <code>{&quot;Date&quot;: &quot;2025-10-01&quot;, &quot;Code&quot;: &quot;72030&quot;, &quot;C&quot;: 2821.5}</code> のような列名と値の組で、それが <code>[ ]</code> に並んで <code>&quot;data&quot;</code> の下に入っています。pandasはこの並びをそのまま表（DataFrame）に直せるので、第6回でCSVを読んだあとと同じ操作ができます。取得した値を手でコピーせず、そのまま集計や作図につなげられ、同じ処理を別の銘柄や期間に繰り返せるのがAPIを使う利点です。</p>
+<p>APIによっては、利用者を識別し、利用権限を確認するためにAPI keyを使います。API keyは英数字が並んだ文字列で、パスワードと同じ扱いをします。他の人に使われるのを防ぐため、Codexへの依頼文、notebook、原稿、提出物には書きません。この授業では、keyを <code>金融論</code> フォルダの <code>api_key.txt</code> に保存し、プログラムがそこから読む形にします。API keyが不要なAPIもあり、コラムの3つはどれも不要です。</p>
+<h2 id="j-quants">J-Quants</h2>
+<p>J-QuantsはJPX総研が提供する、株価や企業の財務情報などのサービスです。上場銘柄の一覧、日々の四本値、財務情報などを、APIから取得できます。この教材ではV2のAPI key方式を使います。</p>
+<p>無料プランでは直近12週間のデータを取得できません。授業では、無料プランの範囲に入る2025年10月を例にします。料金・期間・回数の条件は、<a href="https://jpx-jquants.com/ja">公式のプラン一覧</a>に掲載されています（2026年9月17日確認）。</p>
+<p>アカウントの作成、Freeプランの登録、API keyの発行と保存は、<a href="JQUANTS_SETUP.md">J-Quants APIの準備</a>の手順で授業前に済ませておきます。keyは、各回の <code>LectureXX</code> フォルダをまとめている <code>金融論</code> フォルダの <code>api_key.txt</code> に保存します。この回の作業は、その中の <code>Lecture07</code> フォルダで進めます。</p>
+<h2 id="codexに取得を頼む">Codexに取得を頼む</h2>
+<pre class="text"><code>J-Quantsで、トヨタ自動車の2025年10月の日次株価を取得したい。
+会社名と銘柄コードを確認し、日付・終値・出来高・調整済み終値を表にして。
+調整済み終値の折れ線グラフも作り、会社名・期間・単位を付けて。
+データとコードを保存し、後から同じ図を作れるようにして。
+APIキーは親フォルダのapi_key.txtにあるので、そこから読んで。</code></pre>
+<p>表と図を開き、次の点を見ます。</p>
+<ul>
+<li>銘柄コードが72030で、会社名がトヨタ自動車になっているか。</li>
+<li>行数が2025年10月の営業日数と合っているか。10月は土日と13日（スポーツの日）を除いて22営業日です。</li>
+<li>図の1点を選び、表の同じ日の終値と一致するか。</li>
+<li>図に会社名、期間、縦軸の単位（円）が付いているか。</li>
+</ul>
+<p>違いがあれば、該当する図や表をCodexに示して修正を頼みます。図が読みにくければ「日付が重なっているので、読みやすくして」、列の意味が分からなければ「終値と調整済み終値の違いを、このデータを使って説明して」と頼めます。取得が止まった場合は、keyを含まないerror messageを渡し、原因と対応を調べてもらいます。</p>
+<p>見たい結果が出たら、「日産自動車とイオンも加えて、3社を2024年1月4日を100にそろえた図にして」のように、次に知りたいことを伝えます。第6回と同じ、最初の日を100にそろえた図が、実在の会社で描けます。</p>
+<h2 id="手本のscripttoyota_oct2025.py">手本のscript：toyota_oct2025.py</h2>
+<p>上の依頼文をCodexに渡して書かせたものを、1つのfileに整えたのが <code>toyota_oct2025.py</code> です。VS Codeで開くと、上から順に次の7段になっています。各段の頭にコメントで説明が付いているので、codeと見比べながら読めます。</p>
+<ol type="1">
+<li>libraryの読み込み（requests、pandas、matplotlib）</li>
+<li>取得条件（銘柄コード <code>72030</code>、2025年10月1日から31日）</li>
+<li>API keyの受け取り。<code>金融論</code> フォルダの <code>api_key.txt</code> から読みます。keyはscriptに書きません。</li>
+<li>APIに依頼を送る関数 <code>fetch</code>。URLに条件を付けて送り、返ってきたJSONをDataFrameにします。</li>
+<li>会社名と銘柄コードの確認（<code>/equities/master</code>）</li>
+<li>日次株価の取得と表（<code>/equities/bars/daily</code>）。日付・終値・出来高・調整済み終値の4列にして <code>output/</code> にCSVで保存します。</li>
+<li>調整済み終値の折れ線グラフ。会社名・期間・単位・出所を付けて <code>output/</code> にPNGで保存します。</li>
+</ol>
+<h2 id="apiキーを読む場所">APIキーを読む場所</h2>
+<p><code>toyota_oct2025.py</code> は、<code>金融論</code> フォルダの中の <code>Lecture07</code> フォルダに置きます。scriptは、1つ上の <code>金融論</code> フォルダにある <code>api_key.txt</code> の1行目をAPIキーとして読みます。</p>
+<pre class="text"><code>金融論/
+├── api_key.txt
+├── Lecture06/
+└── Lecture07/
+    ├── toyota_oct2025.py
+    └── output/</code></pre>
+<p>keyをscriptと別のfileに置いておくと、scriptを人に渡してもkeyは渡りません。次の回からのcodeも、同じ <code>api_key.txt</code> から読みます。</p>
+<p>VS Codeで <code>Lecture07</code> を開き、terminalで次のように打つと、scriptが動きます。</p>
+<pre><code>python toyota_oct2025.py</code></pre>
+<p><code>api_key.txt</code> が見つからないときは、非表示の入力欄が出ます。そこにkeyを貼っても同じように動きます。</p>
+<h2 id="動かして確かめる">動かして確かめる</h2>
+<p>終わると、会社の確認、22行の表、最大値の日付が表示され、<code>output/</code> にCSVとPNGができます。APIへの送信は2回だけなので、無料プランの回数制限には触れません。</p>
+<p>銘柄と期間を変えるときは、2段目の <code>CODE</code>、<code>START</code>、<code>END</code> を書き換えます。図のタイトルの会社名は英語で直書きしてあるので、そこも直します。Codexに「日産自動車の2025年9月に変えて」と頼めば、この3か所と図のタイトルをまとめて直してくれます。</p>
+<p>取得したデータの扱いは次の節のとおりです。<code>output/</code> のCSVは自分の手元で使い、提出物や共有folderには入れません。</p>
+<h2 id="表に出てくる列">表に出てくる列</h2>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Date、Code</td>
+<td>取引日、銘柄コード</td>
+</tr>
+<tr>
+<td>O、H、L、C</td>
+<td>始値、高値、安値、終値。調整前の価格です</td>
+</tr>
+<tr>
+<td>Vo</td>
+<td>出来高。売買された株数です</td>
+</tr>
+<tr>
+<td>AdjC</td>
+<td>調整済み終値。株式分割・併合等に対応する列です</td>
+</tr>
+</tbody>
+</table>
+<p>列の名前は第6回の架空データと同じです。始値はその日の最初の取引価格、終値は最後の取引価格です。高値と安値はその日の取引価格の最大・最小です。休場日には取引がないので行がありません。行がない日を、株価が0円の日として扱うことはできません。</p>
+<p>調整済み終値は、その日に実際に売買できた価格とは限りません。また、分割調整と、配当を含めた投資収益は別のものです。今回の図は価格の推移であり、配当込みの収益率ではありません。調整の対象は<a href="https://jpx-jquants.com/ja/spec/eq-bars-daily/adj">公式仕様</a>で確認します。</p>
+<h2 id="取得したデータの扱い">取得したデータの扱い</h2>
+<p>APIで取得できることと、取得データを配布できることは別です。<a href="https://jpx-jquants.com/ja">公式FAQ</a>では、取得データそのものを閲覧できる形で配布・共有することが禁止されています。HW02で提出するのは、取得の条件、集計した表、図、codeで、取得した元データのCSVと <code>api_key.txt</code> は含めません。</p>
+<h1 id="コラムほかのapiもcodexで試す">コラム：ほかのAPIもCodexで試す</h1>
+<p>次の依頼文をCodexに渡すと、データの取得から表や図の作成まで頼めます。どれもAPI keyは不要です。</p>
+<h2 id="天気open-meteo">天気：Open-Meteo</h2>
+<p><a href="https://open-meteo.com/en/docs">Open-Meteo</a>では、天気予報をAPI keyなしで取得できます。</p>
+<pre class="text"><code>Open-MeteoのAPIで、仙台と那覇の今後1週間の最高・最低気温の予報を取得して。
+日付と気温の表を作り、2都市を同じグラフで比べて。
+日本時間の日付を使い、単位と出所を付けて。コードと結果を保存して。</code></pre>
+<p>図を見て、「都市ごとに色を変えて」「札幌も加えて」のように変更を頼めます。</p>
+<h2 id="ポケモンpokéapi">ポケモン：PokéAPI</h2>
+<p><a href="https://pokeapi.co/docs/v2">PokéAPI</a>では、ポケモンの画像や特徴を取得できます。</p>
+<pre class="text"><code>PokéAPIで、ピカチュウ、イーブイ、カビゴンの画像と身長・体重を取得して。
+日本語の名前を付け、身長はm、体重はkgで、画像と数値を並べた一覧を作って。
+ブラウザで見られるHTMLにして、コードと一緒に保存して。</code></pre>
+<p>一覧を見て、「体重の順に並べて」「好きなポケモンも加えて」と頼めます。</p>
+<h2 id="宇宙の画像nasa">宇宙の画像：NASA</h2>
+<p><a href="https://images.nasa.gov/docs/images.nasa.gov_api_docs.pdf">NASAの画像検索API</a>では、キーワードから宇宙や探査の画像を探せます。</p>
+<pre class="text"><code>NASA Image and Video LibraryのAPIで、土星の画像を5枚探して。
+画像とタイトル、日本語の短い説明、出所へのリンクを並べたHTMLを作って。
+コードと結果を保存して。</code></pre>
+<p>画像を見て、「月面着陸の画像に変えて」「画像を大きくして」と頼めます。</p>
+<h1 id="コラムyahoo-financeを使う方法もあります">コラム：Yahoo Financeを使う方法もあります</h1>
+<p>少数の株価なら、ブラウザでYahoo!ファイナンスの銘柄ページを開き、日付や終値を自分でコピーしてExcelに貼り付ける方法もあります。出所と閲覧日を残すと、後から確かめられます。</p>
+<p>Pythonでは、<a href="https://github.com/ranaroussi/yfinance">yfinance</a>という非公式のlibraryでYahoo Financeの株価を取得する方法もあります。銘柄と期間を指定して表にできますが、仕様変更などで取得できなくなる場合があります。</p>
+<p>どちらも、データの利用・再配布にはサービスの利用条件が関わります。yfinanceは海外版Yahoo Financeを利用し、開発元はデータの個人利用を前提とする旨を案内しています。日本版Yahoo!ファイナンスでは、<a href="https://support.yahoo-net.jp/SccFinance/s/article/H000011276">プログラムによる自動取得は禁止</a>されています。</p>
+<h1 id="この回のまとめ">この回のまとめ</h1>
+<p>市場の株価は注文が出会って決まります。投資家が考える価値は、将来の受取額と割引率などの仮定によって変わります。</p>
+<p>APIは、条件を送ると決まった形式でデータが返ってくる窓口です。J-Quantsから取得した株価は、列・単位・調整の意味を確かめてから表と図を読みます。</p>
+</body>
+</html>

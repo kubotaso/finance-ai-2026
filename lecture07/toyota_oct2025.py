@@ -6,8 +6,8 @@
 実行のしかた:
     python toyota_oct2025.py
 
-  1. API keyを環境変数 JQUANTS_API_KEY に入れておくと、そのまま動きます。
-     入れていなければ、実行時に非表示の入力欄が出るので、そこに貼り付けます。
+  1. このfileは 金融論/Lecture07/ に置きます。API keyは、1つ上の 金融論/api_key.txt の
+     1行目から読みます。見つからなければ、実行時に非表示の入力欄が出るので、そこに貼り付けます。
      keyはこのfileにも、出力fileにも書き込みません。
   2. output/ folderに、表のCSVと図のPNGができます。
 
@@ -20,9 +20,8 @@
 # requests   : インターネット越しにAPIへリクエストを送る
 # pandas     : 返ってきたデータを表（DataFrame）として扱う
 # matplotlib : 図を描く
-# os/getpass : API keyを環境変数か非表示入力から受け取る
-# pathlib    : 出力folderを作る
-import os
+# getpass    : api_key.txtがないとき、API keyを非表示の入力欄で受け取る
+# pathlib    : api_key.txtの場所を指定し、出力folderを作る
 from getpass import getpass
 from pathlib import Path
 
@@ -51,8 +50,13 @@ OUT.mkdir(exist_ok=True)
 # ----------------------------------------------------------------------
 # API keyは、J-Quantsに「誰の依頼か」を伝えるパスワードのような文字列です。
 # codeの中に直接書くと、fileを渡した相手にkeyも渡ってしまいます。
-# そこで、環境変数に入っていればそれを使い、なければ画面に出ない入力欄で受け取ります。
-api_key = os.environ.get("JQUANTS_API_KEY", "").strip()
+# そこで、1つ上の 金融論 フォルダにある api_key.txt の1行目を読みます。
+# fileがなければ、画面に出ない入力欄で受け取ります。
+KEY_FILE = Path(__file__).resolve().parent.parent / "api_key.txt"
+api_key = ""
+if KEY_FILE.exists():
+    lines = KEY_FILE.read_text(encoding="utf-8-sig").splitlines()
+    api_key = lines[0].strip() if lines else ""
 if not api_key:
     api_key = getpass("J-Quants API key（入力は表示されません）: ").strip()
 if not api_key:
