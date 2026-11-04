@@ -15,12 +15,15 @@
 | `lecture07` | 第7回 | 株式市場・株価の決まり方とJ-Quants |
 | `lecture08` | 第8回 | J-Quantsで決算を取得し、財務三表を読む |
 | `lecture09` | 第9回 | 決算と株価から企業を比較する：ROE・PER・PBR |
+| [`lecture10`](lecture10/) | 第10回 | マクロ時系列・FRED・新聞記事検索（全体PDF・4分冊・Markdown・作例） |
 
 講義内容は、今後随時更新されます。第2回はon-demand videoの回になります。
 
 ## 使い方
 
 各回の本文は `lectureNN.pdf` です。第3回以降は、同じ内容のMarkdown（`lectureNN.md`）も置いてあり、GitHub上でそのまま読めます。`workbook` フォルダには、授業で動かすnotebook（`.ipynb`）とPython script（`.py`）、そのデータが入っています。
+
+第10回は、[全体PDF](lecture10/lecture10.pdf)と4分冊のPDF・Markdownを用意しています。
 
 まとめてダウンロードしたい場合は、このページの「Code」から「Download ZIP」を選びます。
 
