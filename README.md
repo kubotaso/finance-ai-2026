@@ -8,6 +8,7 @@
 |---|---|---|
 | `lecture01` | 第1回 | 金融論：AIを「部下」として使う（スライド、AIが作成した論文例） |
 | `HW01` | 第2回・課題1 | Codex & VS code入門。動画：[Mac版](https://youtu.be/WBNtSK9K48w)、[Windows版](https://youtu.be/NrwnH4Avhnc) |
+| `HW02` | 課題2 | 決算発表・業績予想修正前後の株価比較 |
 | `lecture03` | 第3回 | PCの作業場所を理解し、Codexで編集する |
 | `lecture04` | 第4回 | Markdownで原稿を組み立て、Word・PDF・slideへ変換する |
 | `lecture05` | 第5回 | Python I：Jupyter、基本文法と現在価値 |
@@ -15,16 +16,13 @@
 | `lecture07` | 第7回 | 株式市場・株価の決まり方とJ-Quants |
 | `lecture08` | 第8回 | J-Quantsで決算を取得し、財務三表を読む |
 | `lecture09` | 第9回 | 決算と株価から企業を比較する：ROE・PER・PBR |
-| [`lecture10`](lecture10/) | 第10回 | マクロ時系列・FRED・新聞記事検索（全体PDF・4分冊・Markdown・作例） |
-| [`HW02`](HW02/) | 課題2 | 決算発表・業績予想修正前後の株価比較（課題PDF・Markdown・参考プロット） |
+| `lecture10` | 第10回 | マクロ時系列・FRED・新聞記事検索 |
 
 講義内容は、今後随時更新されます。第2回はon-demand videoの回になります。
 
 ## 使い方
 
 各回の本文は `lectureNN.pdf` です。第3回以降は、同じ内容のMarkdown（`lectureNN.md`）も置いてあり、GitHub上でそのまま読めます。`workbook` フォルダには、授業で動かすnotebook（`.ipynb`）とPython script（`.py`）、そのデータが入っています。
-
-第10回は、[全体PDF](lecture10/lecture10.pdf)と4分冊のPDF・Markdownを用意しています。
 
 まとめてダウンロードしたい場合は、このページの「Code」から「Download ZIP」を選びます。
 
