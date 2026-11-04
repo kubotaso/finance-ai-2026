@@ -16,6 +16,7 @@
 | `lecture08` | 第8回 | J-Quantsで決算を取得し、財務三表を読む |
 | `lecture09` | 第9回 | 決算と株価から企業を比較する：ROE・PER・PBR |
 | [`lecture10`](lecture10/) | 第10回 | マクロ時系列・FRED・新聞記事検索（全体PDF・4分冊・Markdown・作例） |
+| [`HW02`](HW02/) | 課題2 | 決算発表・業績予想修正前後の株価比較（課題PDF・Markdown・参考プロット） |
 
 講義内容は、今後随時更新されます。第2回はon-demand videoの回になります。
 
