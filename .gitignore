@@ -25,3 +25,6 @@ venv/
 # Temporary files
 *.tmp.pdf
 ~$*
+
+# Local editing copies of PDFs
+*_edit*.pdf

@@ -17,12 +17,13 @@
 | `lecture08` | 第8回 | J-Quantsで決算を取得し、財務三表を読む |
 | `lecture09` | 第9回 | 決算と株価から企業を比較する：ROE・PER・PBR |
 | `lecture10` | 第10回 | マクロ時系列・FRED・新聞記事検索 |
+| `lecture11` | 第11回 | R入門：株価CSVの集計・作図・API接続 |
 
 講義内容は、今後随時更新されます。第2回はon-demand videoの回になります。
 
 ## 使い方
 
-各回の本文は `lectureNN.pdf` です。第3回以降は、同じ内容のMarkdown（`lectureNN.md`）も置いてあり、GitHub上でそのまま読めます。`workbook` フォルダには、授業で動かすnotebook（`.ipynb`）とPython script（`.py`）、そのデータが入っています。
+各回の本文は `lectureNN.pdf` です。第3回以降は、同じ内容のMarkdown（`lectureNN.md`）も置いてあり、GitHub上でそのまま読めます。`workbook` フォルダには、授業で動かすnotebook（`.ipynb`）とPython script（`.py`）、そのデータが入っています。第11回にはR Markdown（`.Rmd`）、R script（`.R`）、仮想の株価CSVがあります。
 
 まとめてダウンロードしたい場合は、このページの「Code」から「Download ZIP」を選びます。
 

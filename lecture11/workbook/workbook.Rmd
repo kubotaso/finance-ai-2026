@@ -1,0 +1,495 @@
+---
+title: "第11回　ワークブック"
+subtitle: "R I：仮想の株価データを読む、選ぶ、集計する"
+date: "金融論"
+output: html_document
+---
+
+# 使い方
+
+上から順に、chunkを1つずつ実行していくR Markdownです。```` ```{r} ```` の行から ```` ``` ```` の行までが1つのchunkです。
+
+- 実行する　chunkの中のcodeを実行します。VS CodeのR拡張ではchunkの上に出る Run Chunk、RStudioではchunkの右上の ▶ を押します。押す前に、何が出るか予想します。
+- やってみる　すぐ下の `# ここに書きます` のchunkに自分で書いて実行します。既にあるchunkを書き換える指示もあります。
+
+errorを確かめたcodeは、行頭に `#` を付けておきます。最後にKnitするとき、errorで止まらなくなります。
+
+詰まったら、chunkの内容とエラーの表示をCodexに見せて聞けます。「やってみる」の答え合わせも頼めます。
+
+`workbook.R` には、「実行する」のcodeだけが上から順に入っています。terminalで `Rscript workbook.R` と打つと、全部が続けて実行されます。
+
+## 準備
+
+パッケージのインストールや更新は、この演習を始める前の環境の準備です。インストール済みのパッケージは保存され、Rを起動するたびに `library()` で読み込みます。`install.packages()`、`library()`、`update.packages()` の違いは、講義本文の「パッケージの準備とlibrary」にまとめています。
+
+第6回と同じ仮想の株価データ `prices.csv` と `prices_short.csv` が `data/` に入っています。今回の演習は、このCSVを使って進めます。
+
+`金融論` フォルダの中に `Lecture11` を作り、配布資料から `workbook.Rmd`、`workbook.R` と、株価CSVを入れた `data` フォルダをコピーします。追加のサンプルスクリプトも、同じ `Lecture11` に置きます。
+
+VS Codeで `金融論/Lecture11` をフォルダごと開き、ファイル一覧から `workbook.Rmd` を開きます。RStudioを使う場合も、このファイルを開けます。
+
+下のchunkで、Rとパッケージの版、作業フォルダ名が表示されます。環境の準備でerrorが出た場合は、その表示をCodexに見せて設定を頼めます。
+
+```{r}
+R.version.string
+packageVersion("tidyverse")
+packageVersion("rmarkdown")
+basename(getwd())
+```
+
+最後の行は、作業ディレクトリのfolder名です。`Lecture11` と出れば、この後の `data/prices.csv` のような相対pathがそのまま通ります。
+
+
+# 1. Rの基本文法
+
+第5回のPythonと同じ計算を、Rで書きます。例は2024年度の「R入門と複利計算」から取っています。
+
+## 1-1　代入と表示
+
+実行する
+
+```{r}
+A <- 1
+B <- 2
+3 -> C
+A
+print(B)
+C
+```
+
+`<-` は、右の値を左の名前に入れます。`3 -> C` のように矢印を逆に向けても同じです。名前だけを書いた行は、`print` しなくても値が表示されます。先頭の `[1]` は、その行が1番目の要素から始まるという印です。
+
+やってみる
+
+`A + B * C` と `(A + B) * C` を、結果を予想してから実行します。7と9になります。
+
+```{r}
+# ここに書きます
+```
+
+## 1-2　vectorと添字
+
+実行する
+
+```{r}
+D <- c(A, B, C)
+D
+D[1]
+D[3]
+```
+
+`c()` で値をまとめたものがvectorです。Rの番号は1から始まり、`D[1]` が1番目です。
+
+やってみる
+
+`D[4]` と `D[0]` を実行します。Pythonなら範囲外の番号はerrorですが、Rでは `D[4]` が `NA`、`D[0]` が空のvector `numeric(0)` になり、errorは出ません。番号を間違えても止まらないので、`length(D)` で長さを見ておきます。
+
+```{r}
+# ここに書きます
+```
+
+## 1-3　vectorの計算
+
+実行する
+
+```{r}
+v1 <- c(2, 3, 4)
+v2 <- c(6, 4, 2)
+v1 * v2
+v1 * 2
+```
+
+vectorどうしの `*` は、同じ位置の要素どうしの掛け算で、`12 12 8` です。`v1 * 2` は各要素を2倍して `4 6 8` になります。Pythonのlistで `[2, 3, 4] * 2` と書くと、listが2回繰り返されました。
+
+やってみる
+
+`c(1, 2, 3) + c(10, 20)` を実行します。`11 22 13` とwarningが出ます。短いほうのvectorが先頭に戻って繰り返し使われるからです。warningは、長さが合っていないことを知らせています。
+
+```{r}
+# ここに書きます
+```
+
+## 1-4　型
+
+実行する
+
+```{r}
+class(3)
+class("Pen Pineapple Apple Pen")
+class(3 >= 60)
+```
+
+`numeric` は数、`character` は文字列、`logical` は `TRUE` か `FALSE` です。
+
+```{r, error=TRUE}
+"3" + "3"
+```
+
+文字列どうしは足せないので、errorになります。Pythonの `"3" + "3"` は、文字をつなげて `"33"` でした。
+
+やってみる
+
+`as.numeric("3") + as.numeric("3")` を実行します。数に変換してから足すので `6` です。
+
+```{r}
+# ここに書きます
+```
+
+## 1-5　繰り返しと条件分岐
+
+実行する
+
+```{r}
+D <- 0
+for (i in 1:5) {
+  D <- D + i
+  print(D)
+}
+```
+
+`1:5` は1, 2, 3, 4, 5で、終わりの5を含みます。繰り返す範囲は `{ }` で囲みます。字下げは読みやすくするためのもので、Pythonと違って動作には関係しません。
+
+```{r}
+test <- 60
+if (test > 60) {
+  print("Pass")
+} else if (test == 60) {
+  print("Just barely Pass")
+} else {
+  print("Fail")
+}
+```
+
+条件は `( )` の中に書きます。Pythonの `elif` は、Rでは `else if` です。
+
+やってみる
+
+1. 上のchunkの `test` を59と61に変えて、それぞれ実行します。
+2. `for (i in seq(1, 13, by = 3))` で、3ずつ増える `i` を足していきます。1, 5, 12, 22, 35と表示されます。
+
+```{r}
+# ここに書きます
+```
+
+## 1-6　複利
+
+100円を年10%で20年間預けます。最初の10年が10%、残りの10年が20%の場合も計算します。
+
+実行する
+
+```{r}
+10 * 20 + 100
+100 * 1.1^20
+Fuku <- 100
+for (i in 1:20) {
+  if (i <= 10) {
+    Fuku <- Fuku * 1.1
+  } else {
+    Fuku <- Fuku * 1.2
+  }
+}
+Fuku
+```
+
+単利は300円、複利は672.75円、途中で金利が上がる場合は1605.977円です。べき乗は `^` です。Rは表示を7桁に丸めるので、`1.1^2` は `1.21` と出ます。中身の小数の近似はPythonと同じです。
+
+やってみる
+
+最初の10年を5%、残りの10年を10%に変えます。422.4933円になります。
+
+```{r}
+# ここに書きます
+```
+
+## 1-7　関数
+
+実行する
+
+```{r}
+future_value <- function(principal, rate, years) {
+  principal * (1 + rate)^years
+}
+future_value(100, 0.10, 2)
+```
+
+`function( )` で関数を作り、`<-` で名前を付けます。`{ }` の最後の行の値が、関数から返ってきます。Pythonの `def` と `return` にあたります。
+
+やってみる
+
+`future_value(100, 0.10, 20)` を実行します。1-6の複利と同じ672.75です。
+
+```{r}
+# ここに書きます
+```
+
+# 2. 株価CSVを読み込む
+
+## 2-1　read_csvと列の型
+
+実行する
+
+```{r}
+library(tidyverse)
+prices <- read_csv(
+  "data/prices.csv",
+  col_types = cols(Date = col_date(), Code = col_character())
+)
+nrow(prices)
+ncol(prices)
+glimpse(prices)
+```
+
+1,464行、14列です。`Date` を日付、`Code` を文字列として読みます。銘柄コードは先頭の0を含めて保存されます。日付と価格は、Pythonで扱ったCSVと同じです。
+
+## 2-2　1行は1銘柄の1日
+
+実行する
+
+```{r}
+n_distinct(prices$Code)
+n_distinct(prices$Date)
+prices |> count(Code)
+```
+
+3銘柄・488日分です。各銘柄に488行あります。`prices$Code` は表 `prices` の銘柄コードの列です。`|>` は左の結果を右の関数に渡します。
+
+やってみる
+
+`min(prices$Date)` と `max(prices$Date)` で、最初と最後の日付が分かります。2024年1月4日と2025年12月30日です。
+
+```{r}
+# ここに書きます
+```
+
+# 3. 行と列を選ぶ
+
+## 3-1　selectで列を選ぶ
+
+実行する
+
+```{r}
+prices1 <- prices |> select(Date, Code, C, AdjC, Vo)
+ncol(prices1)
+head(prices1)
+```
+
+日付、銘柄コード、終値、調整済み終値、出来高の5列を残します。`C` と `AdjC` の単位は円、`Vo` の単位は株です。Auto Bは2025年4月1日に株式分割があり、`AdjC` は分割前後の価格を同じ1株の単位にそろえています。
+
+## 3-2　filterで1銘柄を選ぶ
+
+実行する
+
+```{r}
+auto_a <- prices1 |> filter(Code == "01110")
+nrow(auto_a)
+```
+
+Auto Aの488行になります。銘柄コードは文字列なので引用符で囲みます。`==` は値が等しいかを調べます。
+
+やってみる
+
+銘柄コードを `"02220"` に変えると、Auto Bの488行を取り出せます。`auto_a` はそのまま残し、別の名前に入れると2つの表を見比べられます。
+
+```{r}
+# ここに書きます
+```
+
+## 3-3　欠損と0
+
+実行する
+
+```{r}
+colSums(is.na(prices1))
+prices1 |> filter(is.na(C))
+```
+
+`C` と `AdjC` に欠損が1つずつあります。2024年8月5日のRetail Cは売買が成立せず、終値が `NA`、出来高が0です。`is.na()` は欠損なら `TRUE` を返し、`colSums()` は列ごとにその数を数えます。
+
+# 4. 列を作る
+
+## 4-1　mutateで単位を変える
+
+実行する
+
+```{r}
+prices2 <- prices1 |> mutate(C_thousand_yen = C / 1000)
+head(prices2)
+```
+
+元の終値を1,000で割り、千円単位の列を追加します。元の列は円単位のまま残ります。
+
+## 4-2　case_whenで銘柄名を付ける
+
+実行する
+
+```{r}
+prices2 <- prices2 |>
+  mutate(Name = case_when(
+    Code == "01110" ~ "Auto A",
+    Code == "02220" ~ "Auto B",
+    Code == "03330" ~ "Retail C",
+    TRUE ~ "その他"
+  ))
+prices2 |> count(Code, Name)
+```
+
+`case_when()` は上から条件を調べ、最初に当てはまった条件の右側の値を入れます。銘柄コードに対応する名前が付きます。
+
+## 4-3　if_elseで2つに分ける
+
+実行する
+
+```{r}
+prices2 <- prices2 |>
+  mutate(volume_group = if_else(Vo >= 10000000,
+                                "1000万株以上", "1000万株未満"))
+prices2 |> count(volume_group)
+```
+
+その日の出来高で分類します。1,000万株以上は881行、未満は583行です。条件に当てはまるかどうかで2つに分けるときは `if_else()` を使えます。
+
+やってみる
+
+`count(Code, volume_group)` に変えると、銘柄ごとの内訳を見られます。
+
+```{r}
+# ここに書きます
+```
+
+# 5. 銘柄ごとに集計する
+
+## 5-1　group_byとsummarise
+
+実行する
+
+```{r}
+price_summary <- prices2 |>
+  group_by(Code, Name) |>
+  summarise(
+    days = n(),
+    priced_days = sum(!is.na(AdjC)),
+    mean_adjusted_close = mean(AdjC, na.rm = TRUE),
+    .groups = "drop"
+  )
+price_summary
+```
+
+`group_by()` で銘柄ごとに分け、`summarise()` で1銘柄1行にします。CSVに記録された日数は3銘柄とも488日です。価格がある日数はAuto AとAuto Bが488日、Retail Cが487日です。
+
+調整済み終値の平均は、Auto Aが約2,703.98円、Auto Bが約1,296.36円、Retail Cが約4,077.83円です。`na.rm = TRUE` は欠損を除いて計算する指定です。
+
+やってみる
+
+`summarise()` に `mean_volume = mean(Vo)` を加えると、1日あたりの平均出来高も同じ表に並びます。
+
+```{r}
+# ここに書きます
+```
+
+## 5-2　欠損の行を除く
+
+実行する
+
+```{r}
+priced <- prices2 |> drop_na(AdjC)
+nrow(priced)
+priced |> count(Code)
+```
+
+価格がない1行を除くと、1,463行になります。Auto AとAuto Bは488行、Retail Cは487行です。
+
+## 5-3　|> と %>%
+
+実行する
+
+```{r}
+tab1 <- priced |> count(Code)
+tab2 <- priced %>% count(Code)
+tab3 <- count(priced, Code)
+identical(tab1, tab2)
+identical(tab1, tab3)
+```
+
+どちらも `TRUE` になります。`%>%` はtidyverseを読み込むと使えるpipe、`|>` はR本体のpipeです。ここでは同じ結果になります。
+
+# 6. 手計算と照合する
+
+## 6-1　Auto Aの3日分
+
+実行する
+
+```{r}
+three_days <- auto_a |>
+  filter(Date >= as.Date("2024-08-01"), Date <= as.Date("2024-08-05"))
+three_days |> select(Date, C)
+mean(three_days$C)
+```
+
+終値は2,454円、2,492円、2,467円です。平均は (2,454 + 2,492 + 2,467) ÷ 3 = 2,471円になります。
+
+## 6-2　Retail Cの欠損を含む3日分
+
+実行する
+
+```{r}
+retail_three <- prices1 |>
+  filter(Code == "03330",
+         Date >= as.Date("2024-08-01"), Date <= as.Date("2024-08-05"))
+retail_three |> select(Date, C, Vo)
+mean(retail_three$C)
+mean(retail_three$C, na.rm = TRUE)
+sum(!is.na(retail_three$C))
+```
+
+終値は3,872円、3,914円、`NA` です。通常の平均は `NA`、欠損を除いた平均は (3,872 + 3,914) ÷ 2 = 3,893円になります。平均に使った日数は2日です。
+
+# 7. 確認表を保存する
+
+実行する
+
+```{r}
+dir.create("output", showWarnings = FALSE)
+check_rows <- tibble(
+  step = c("all rows", "AdjC not NA", "Auto A"),
+  rows = c(nrow(prices), nrow(priced), nrow(auto_a))
+)
+check_missing <- tibble(
+  variable = names(prices1),
+  n_missing = colSums(is.na(prices1))
+)
+write_csv(check_rows, "output/price_check_rows.csv")
+write_csv(check_missing, "output/price_check_missing.csv")
+write_csv(price_summary, "output/price_summary.csv")
+check_rows
+check_missing
+```
+
+元の1,464行、価格のある1,463行、Auto Aの488行を保存します。`output/price_summary.csv` には、銘柄別の日数と平均が入っています。
+
+# 8. 最初から実行し直す
+
+Knitすると、上から順にcodeを実行し、同じフォルダに `workbook.html` ができます。RStudioでは上部のKnit、VS CodeではR拡張のKnitから作成できます。
+
+新しいRのセッションから実行すると、途中で作った変数に頼らず、同じ結果を再現できるか確かめられます。`workbook.R` でも、演習のcodeを上から続けて実行できます。
+
+# 9. 追加例：J-Quantsで自動車3社を比べる
+
+J-QuantsのダッシュボードのAPI Keysでキーを発行し、`金融論/api_key.txt` に `JQUANTS_API_KEY=...` の形で保存します。作業場所の `Lecture11` から見て1つ上のフォルダにあるファイルです。詳しい準備は講義本文の「APIキーを用意する」にあります。
+
+`03_jquants_auto.R` は、トヨタ・ホンダ・日産の2025年1〜6月の日次株価を取得します。接続先のURLに銘柄・期間を付け、APIキーをヘッダーに入れてGETリクエストを送ります。返ってきたJSONの `data` をRの表に変換します。J-QuantsのAPIキーを使う追加例です。次の行を実行すると、調整済み終値を円で重ねた図と、最初の共通取引日を100にそろえた図ができます。
+
+```{r, eval=FALSE}
+source("03_jquants_auto.R")
+```
+
+結果は `output/jquants_auto_close.png` と `output/jquants_auto_index.png` です。前者では価格の水準、後者では初日からの変化率を比較できます。このchunkはKnit時には実行せず、APIを使うときに単独で実行できます。
+
+# 10. 追加例：型の変換・収益率・ggplot2
+
+`04_ggplot_prices.R` は、数字の文字列を数値に変換し、銘柄ごとの前日からの収益率を計算します。Auto Aの終値、最大値に赤い点を付けた図、初日を100にそろえた3社の比較図も作ります。コードの説明は、講義本文の対応する節にあります。
+
+```{r, eval=FALSE}
+source("04_ggplot_prices.R")
+```
+
+図は `output/ggplot_auto_a_close.png`、`output/ggplot_auto_a_peak.png`、`output/ggplot_prices_index.png` に保存されます。この追加例は、手元のCSVだけで実行できます。

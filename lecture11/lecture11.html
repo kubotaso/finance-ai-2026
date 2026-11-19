@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja" xml:lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.13" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>第11回　R入門：株価データを読む、選ぶ、集計する</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="lecture.css" />
+  <link rel="stylesheet" href="print.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">第11回　R入門：株価データを読む、選ぶ、集計する</h1>
+<p class="subtitle">R
+Markdown、Pythonとの文法の違い、株価CSVの読み込み、選択・変数作成・銘柄別集計、手計算との照合</p>
+<p class="date">金融論</p>
+</header>
+<h1 id="この回で扱うこと">この回で扱うこと</h1>
+<ul>
+<li>Rの標準画面、RStudio、VS Code、Positronの特徴と長所・短所を知る</li>
+<li>base Rとtidyverseの成り立ちと関係を知る</li>
+<li>VS CodeでRのscriptとR Markdownを扱う</li>
+<li>パッケージのインストール・読み込み・更新を区別する</li>
+<li>Rの基本文法：代入、vector、型、繰り返し、条件分岐、関数</li>
+<li>仮想の株価CSVを読み込み、行数・列・欠損を確かめる</li>
+<li>行と列を選び、変数を作り、群ごとに集計する</li>
+<li>数に見える文字列を変換し、前日からの収益率を計算する</li>
+<li>手計算との照合と、確認表の保存</li>
+<li>ggplot2で株価の折れ線と、初日を100にそろえた比較図を描く</li>
+<li>株価が最大の日を図に示し、元のCSVと照合する</li>
+<li>J-Quantsで自動車3社の株価を取得し、2通りの図で比べる</li>
+</ul>
+<h1 id="rを動かす4つの画面">Rを動かす4つの画面</h1>
+<p>Rは、統計計算や作図のための言語であり、プログラムを実行するソフトウェアでもあります。RStudio、VS
+Code、Positronは、コードを書き、Rに実行させ、結果を見るためのアプリです。どのアプリでも、計算を担当するR本体を使います。</p>
+<p>以下の4枚は、同じコードで表とグラフを作った画面です。1から5までの数を
+<code>x</code>、その2乗を <code>y</code> とし、表 <code>xy</code> と平均
+<code>mean_y</code>
+を作っています。計算結果はどれも同じで、平均は11です。アプリによって、コードや結果の見せ方、使い始めるまでの準備が違います。</p>
+<h2 id="rの標準画面">Rの標準画面</h2>
+<p>R本体に付属する画面で、MacではR.app、WindowsではRGuiと呼ばれます。Consoleにコードを入力すると、その場に計算結果が出ます。グラフは別のウィンドウに表示されます。</p>
+<p>RはterminalからCLI（文字で操作する方法）でも使えます。terminalで
+<code>R</code> と入力すると対話モードが開き、<code>&gt;</code>
+の後にコードを入力して実行できます。計算結果も同じterminalに表示されます。</p>
+<p>長所は、専用のエディタを追加せずに、短い計算をすぐ試せることです。Console中心の画面なので、長いコードを編集しながら変数や表を見比べる作業には、次のような専用のエディタが向いています。</p>
+<figure>
+<img src="assets/r_console.png"
+alt="R.app：左にConsoleの表と平均11、右に別ウィンドウのグラフが表示されています。" />
+<figcaption
+aria-hidden="true">R.app：左にConsoleの表と平均11、右に別ウィンドウのグラフが表示されています。</figcaption>
+</figure>
+<h2 id="rstudio">RStudio</h2>
+<p>コードはSource、計算結果はConsole、変数一覧はEnvironment、グラフはPlotsに表示されます。表を開いて中身を確認する機能もあります。</p>
+<p>長所は、Rの分析に使う機能がまとまっていて、コードと結果を見比べやすいことです。短所は、一つのウィンドウを複数の領域に分けるため、小さな画面ではコードやグラフの表示が狭くなることです。</p>
+<figure>
+<img src="assets/rstudio.png"
+alt="RStudio：左上にコード、左下にConsole、右上にEnvironment、右下にPlotsが並びます。" />
+<figcaption
+aria-hidden="true">RStudio：左上にコード、左下にConsole、右上にEnvironment、右下にPlotsが並びます。</figcaption>
+</figure>
+<p>Posit
+Cloudは、クラウド上のRStudioをブラウザから使うサービスです。自分のPCにRやRStudioをインストールせずに始められるのが長所です。一方、インターネット接続が必要で、無料プランには計算時間や使える資源に上限があります。</p>
+<figure>
+<img src="assets/posit_cloud.png"
+alt="Posit Cloud：ブラウザの中でRStudioが動いています。コード、Consoleの表と平均11、Environment、Plotsを同じ画面で見られます。" />
+<figcaption aria-hidden="true">Posit
+Cloud：ブラウザの中でRStudioが動いています。コード、Consoleの表と平均11、Environment、Plotsを同じ画面で見られます。</figcaption>
+</figure>
+<h2 id="vs-codeでr">VS CodeでR</h2>
+<p>R拡張を追加すると、これまでPythonやMarkdownで使ってきたVS
+CodeでRも扱えます。計算結果はRのターミナル、変数一覧はWorkspace
+Viewer、グラフはPlot Viewerに表示されます。</p>
+<p>長所は、使い慣れたエディタで複数の言語や文書を扱えることです。短所は、R拡張や関連するパッケージの準備が必要なことです。コードの入力補完やグラフの表示には、それぞれの機能に合った設定が必要になります。</p>
+<figure>
+<img src="assets/vscode_r.png"
+alt="VS Code：左に変数一覧、中央にコードとグラフ、その右に開いた変数 x の中身、下にRのターミナルが表示されています。" />
+<figcaption aria-hidden="true">VS
+Code：左に変数一覧、中央にコードとグラフ、その右に開いた変数 x
+の中身、下にRのターミナルが表示されています。</figcaption>
+</figure>
+<h2 id="positron">Positron</h2>
+<p>VS
+Codeをもとに、RとPythonでのデータ分析向けに作られたアプリです。計算結果はConsole、変数一覧はVariables、グラフはPlotsに表示されます。表はData
+Explorerで閲覧できます。</p>
+<p>長所は、RとPythonの両方で、変数・表・グラフを確認する機能が最初から組み込まれていることです。短所は、拡張機能の配布元がVS
+Codeと異なり、使い慣れた拡張機能の一部を利用できないことです。</p>
+<figure>
+<img src="assets/positron.png"
+alt="Positron：中央にコードとConsole、右上にVariables、右下にPlotsが並びます。mean_y の値は11です。" />
+<figcaption
+aria-hidden="true">Positron：中央にコードとConsole、右上にVariables、右下にPlotsが並びます。mean_y
+の値は11です。</figcaption>
+</figure>
+<h1 id="vs-codeで実習を進める">VS Codeで実習を進める</h1>
+<h2 id="作業フォルダと教材">作業フォルダと教材</h2>
+<p><code>金融論</code> フォルダの中に、今回の作業用フォルダ
+<code>Lecture11</code> を作ります。配布資料の <code>workbook/</code>
+の中から、次のファイルと株価CSVを <code>Lecture11</code>
+にコピーします。</p>
+<pre class="text"><code>金融論/
+└── Lecture11/
+    ├── workbook.Rmd
+    ├── workbook.R
+    ├── 01_compare_editors.R
+    ├── 02_base_r_and_tidyverse.R
+    ├── 03_jquants_auto.R
+    ├── 04_ggplot_prices.R
+    └── data/
+        ├── prices.csv
+        └── prices_short.csv</code></pre>
+<p><code>prices.csv</code> と <code>prices_short.csv</code>
+は、第6回で使った仮想の株価データです。基本演習は手元のCSVで進められます。実行結果は
+<code>Lecture11/output/</code> に保存されます。</p>
+<p>VS
+Codeの「ファイル」→「フォルダーを開く」で、<code>金融論/Lecture11</code>
+を開きます。左のファイル一覧から <code>workbook.Rmd</code>
+を開くと、演習の文章とコードが表示されます。上から順にchunkを実行します。同じcodeを一度に実行できる
+<code>workbook.R</code>
+もあります。「やってみる」の答え合わせは、Codexに頼めます。</p>
+<p>R本体とVS CodeのR拡張の準備や設定は、Codexに頼めます。</p>
+<h2 id="rのscriptを動かす">Rのscriptを動かす</h2>
+<p><code>.R</code> は、Rのコードを書いたファイルです。VS
+Codeでは、コードを選んでR拡張の「Run
+Selection/Line」で実行すると、Rのターミナルに結果が出ます。変数はWorkspace
+Viewer、グラフはPlot Viewerで見られます。</p>
+<p>実行時に「Run R
+Code」という画面で、コードを実行する場所の選択肢が出る場合があります。「Create
+R
+terminal」を選ぶと、画面下部のTerminalにRが起動します。この講義では、このRのターミナルでコードを実行します。</p>
+<p><code>workbook.R</code>
+は、「実行する」のcodeだけを並べたscriptです。terminalで
+<code>Rscript workbook.R</code>
+と打つと、上から全部が実行されます。第5回の <code>python pv.py</code>
+と同じ使い方です。</p>
+<h2 id="r-markdown">R Markdown</h2>
+<p>R
+Markdown（<code>.Rmd</code>）は、Markdownの文章の間にRのcodeを置いたfileです。codeは、次のようなchunkに書きます。</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 複利</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>100円を年10%で20年間預けます。</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="in">100 * 1.1^20</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div>
+<p>chunkは1つずつ実行できます。この講義のVS
+Codeでは、数値はRのターミナル、図はPlot
+Viewerに表示されます。RStudioでは、結果をchunkの下に表示する設定も使えます。実行して作った変数はRの中に残り、次のchunkから使えます。</p>
+<p>新しいR
+processでKnitすると、上のchunkから順に全部を実行し、文章・code・結果を並べたHTMLを作ります。再現確認では新しいR
+processを使います。consoleからrenderを呼ぶだけでは、既存の環境を参照する場合があります。
+notebookの Restart と Run All にあたる操作です。<code>.Rmd</code>
+のfile自体には文章とcodeだけが入り、結果はHTMLの側に残ります。</p>
+<p>VS Codeでは、R拡張を入れるとchunkの上に Run Chunk
+が出ます。そこからchunkごとに実行できます。RStudioでも同じ
+<code>.Rmd</code> を開けます。</p>
+<h2 id="作業ディレクトリを確かめる">作業ディレクトリを確かめる</h2>
+<p>Knitするときの作業ディレクトリは、その <code>.Rmd</code>
+があるfolderです。今回は <code>金融論/Lecture11</code>
+です。<code>data/prices.csv</code> は、その中の <code>data</code>
+フォルダにあるファイルを指します。VS
+Codeでchunkを実行するときの作業ディレクトリも、<code>getwd()</code>
+で確かめられます。表示されたパスが <code>Lecture11</code>
+で終わっていれば、同じ相対pathを使えます。</p>
+<h1 id="パッケージの準備とlibrary">パッケージの準備とlibrary</h1>
+<h2 id="guiで管理する">GUIで管理する</h2>
+<p>パッケージのインストールや更新は、画面上の操作でも行えます。入口はアプリによって違います。</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>環境</th>
+<th>パッケージ管理の画面</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RStudio・Posit Cloud</td>
+<td>PackagesタブのInstallで追加、Updateで更新できます。一覧のチェックボックスで読み込むこともできます。</td>
+</tr>
+<tr>
+<td>VS Code＋R拡張</td>
+<td>Help PagesのInstall CRAN Packageから追加できます。同じ行のUpdate
+Installed
+Packagesで、インストール済みパッケージをまとめて更新できます。</td>
+</tr>
+<tr>
+<td>Positron</td>
+<td>サイドバーのPackagesペインで、パッケージを検索して追加したり、更新したりできます。RとPythonの両方に対応しています。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="主なコマンド">主なコマンド</h2>
+<ul>
+<li><code>install.packages("tidyverse")</code>：パッケージをインストールします。</li>
+<li><code>library(tidyverse)</code>：インストール済みのパッケージを読み込みます。</li>
+<li><code>update.packages()</code>：パッケージを更新します。</li>
+<li><code>packageVersion("tidyverse")</code>：パッケージの版を調べます。</li>
+<li><code>sessionInfo()</code>：Rと読み込んだパッケージの情報を表示します。</li>
+<li><code>dplyr::filter()</code>：パッケージ名を指定して関数を使います。</li>
+</ul>
+<p>パッケージのインストール・更新・設定や、エラーの解消は<strong>Codexに頼めます</strong>。「必要なRパッケージを入れて、Knitできるようにして」のように依頼できます。</p>
+<h1 id="rの基本文法">Rの基本文法</h1>
+<h2 id="pythonとの違い">Pythonとの違い</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Python</th>
+<th>R</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>代入</td>
+<td><code>A = 1</code></td>
+<td><code>A &lt;- 1</code></td>
+</tr>
+<tr>
+<td>値をまとめる</td>
+<td><code>[2, 3, 4]</code>（list）</td>
+<td><code>c(2, 3, 4)</code>（vector）</td>
+</tr>
+<tr>
+<td>最初の要素</td>
+<td><code>D[0]</code></td>
+<td><code>D[1]</code></td>
+</tr>
+<tr>
+<td>範囲外の番号</td>
+<td>error</td>
+<td><code>D[4]</code> は <code>NA</code>、<code>D[0]</code> は空</td>
+</tr>
+<tr>
+<td>1から5まで</td>
+<td><code>range(1, 6)</code></td>
+<td><code>1:5</code></td>
+</tr>
+<tr>
+<td>3ずつ増やす</td>
+<td><code>range(1, 14, 3)</code></td>
+<td><code>seq(1, 13, by = 3)</code></td>
+</tr>
+<tr>
+<td>べき乗</td>
+<td><code>1.1 ** 2</code></td>
+<td><code>1.1^2</code></td>
+</tr>
+<tr>
+<td>繰り返す範囲</td>
+<td><code>:</code> と字下げ</td>
+<td><code>{ }</code></td>
+</tr>
+<tr>
+<td>3つ目以降の条件</td>
+<td><code>elif</code></td>
+<td><code>else if</code></td>
+</tr>
+<tr>
+<td>型を調べる</td>
+<td><code>type()</code></td>
+<td><code>class()</code></td>
+</tr>
+<tr>
+<td>文字列どうしの <code>+</code></td>
+<td>つなげる</td>
+<td>error</td>
+</tr>
+<tr>
+<td>欠損</td>
+<td><code>NaN</code>、<code>None</code></td>
+<td><code>NA</code></td>
+</tr>
+<tr>
+<td>関数を作る</td>
+<td><code>def f(x):</code> と <code>return</code></td>
+<td><code>f &lt;- function(x) { }</code></td>
+</tr>
+</tbody>
+</table>
+<p>Rの番号は1から始まります。範囲外の番号を書いてもerrorで止まらないので、番号を間違えたときに気づきにくくなります。</p>
+<h2 id="型を調べて変換する">型を調べて変換する</h2>
+<p><code>class()</code> で値の型を調べます。Pythonの <code>type()</code>
+にあたります。</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(<span class="dv">3</span>)       <span class="co"># &quot;numeric&quot;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(<span class="st">&quot;3&quot;</span>)     <span class="co"># &quot;character&quot;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(<span class="cn">TRUE</span>)    <span class="co"># &quot;logical&quot;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">as.numeric</span>(<span class="st">&quot;3&quot;</span>) <span class="sc">+</span> <span class="dv">3</span>   <span class="co"># 6</span></span></code></pre></div>
+<p><code>numeric</code> は数値、<code>character</code>
+は文字列、<code>logical</code> は <code>TRUE</code> または
+<code>FALSE</code> です。<code>"3"</code>
+は数字の形をした文字列なので、<code>as.numeric()</code>
+で数に変換してから足します。</p>
+<h2 id="vectorの計算">vectorの計算</h2>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>v1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>v2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">6</span>, <span class="dv">4</span>, <span class="dv">2</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>v1 <span class="sc">*</span> v2   <span class="co"># 12 12 8</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>v1 <span class="sc">*</span> <span class="dv">2</span>    <span class="co"># 4 6 8</span></span></code></pre></div>
+<p>vectorどうしの計算は、同じ位置の要素どうしで行います。Pythonのlistに
+<code>* 2</code>
+をすると、listが2回繰り返されました。Rの表の列もvectorなので、<code>prices$C * 100</code>
+と書くと各行の終値から100株分の金額をまとめて計算できます。pandasの列の計算と同じです。</p>
+<p>長さの違うvectorを足すと、短いほうが先頭に戻って繰り返し使われます。<code>c(1, 2, 3) + c(10, 20)</code>
+は <code>11 22 13</code> になり、warningが出ます。</p>
+<h2 id="forで順に足す">forで順に足す</h2>
+<p>1から5までを順に足し、途中の合計を表示します。Pythonで使った
+<code>total = total + i</code> の例を、Rで書くと次のようになります。</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>total <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>) {</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  total <span class="ot">&lt;-</span> total <span class="sc">+</span> i</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(total)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>結果は順に
+<code>1</code>、<code>3</code>、<code>6</code>、<code>10</code>、<code>15</code>
+です。<code>i</code> に1から5までが1つずつ入り、そのたびに
+<code>total</code> に足されます。</p>
+<p>Pythonの <code>range(1, 6)</code> に対応するのが、Rの
+<code>1:5</code>
+です。Rでは終わりの5も含みます。3ずつ増やす場合は、<code>seq(1, 13, by = 3)</code>
+と書くと <code>1, 4, 7, 10, 13</code> になります。</p>
+<p><code>for (i in 1:5)</code> の <code>( )</code>
+に繰り返しの条件を書き、実行する部分を <code>{ }</code>
+で囲みます。Pythonの <code>:</code>
+と字下げにあたる部分です。Rの字下げは読みやすくするためのもので、動作には関係しません。繰り返しの途中の値を表示するときは
+<code>print()</code> を使います。</p>
+<h2 id="ifで条件を分ける">ifで条件を分ける</h2>
+<p>点数が60点以上なら <code>"Pass"</code>、それ以外なら
+<code>"Fail"</code> と表示します。</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>test <span class="ot">&lt;-</span> <span class="dv">61</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (test <span class="sc">&gt;=</span> <span class="dv">60</span>) {</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="st">&quot;Pass&quot;</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="st">&quot;Fail&quot;</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>この例では <code>"Pass"</code> が出ます。<code>test &gt;= 60</code>
+が成り立つと最初の <code>{ }</code> の中を実行し、成り立たなければ
+<code>else</code> の中を実行します。</p>
+<p>60点ちょうどの場合を分けると、3通りになります。Pythonの
+<code>elif</code> にあたる書き方が、Rの <code>else if</code> です。</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>test <span class="ot">&lt;-</span> <span class="dv">60</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (test <span class="sc">&gt;</span> <span class="dv">60</span>) {</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="st">&quot;Pass&quot;</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> <span class="cf">if</span> (test <span class="sc">==</span> <span class="dv">60</span>) {</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="st">&quot;Just barely Pass&quot;</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="st">&quot;Fail&quot;</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>この例では <code>"Just barely Pass"</code>
+が出ます。<code>&lt;-</code> は代入、<code>==</code>
+は等しいかどうかの比較です。比べる記号はPythonと同じで、<code>&gt;</code>、<code>&lt;</code>、<code>&gt;=</code>、<code>&lt;=</code>、<code>==</code>、<code>!=</code>
+を使います。</p>
+<h2 id="forとifで複利を計算する">forとifで複利を計算する</h2>
+<p>最初の10年は年10%、残りの10年は年20%で、100円を20年間運用します。</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>Fuku <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>) {</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (i <span class="sc">&lt;=</span> <span class="dv">10</span>) {</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    Fuku <span class="ot">&lt;-</span> Fuku <span class="sc">*</span> <span class="fl">1.1</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    Fuku <span class="ot">&lt;-</span> Fuku <span class="sc">*</span> <span class="fl">1.2</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>Fuku   <span class="co"># 1605.977</span></span></code></pre></div>
+<p><code>i</code>
+が1から10の間は1.1を掛け、11から20の間は1.2を掛けます。20年後の金額は約1,605.98円です。Pythonで使った
+<code>for year in range(1, 21):</code> と同じ計算です。</p>
+<p>20年間ずっと年10%なら、<code>100 * 1.1^20</code>
+と書いても計算できます。結果は約672.75円です。Pythonのべき乗
+<code>**</code> は、Rでは <code>^</code> と書きます。</p>
+<h2 id="関数">関数</h2>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>future_value <span class="ot">&lt;-</span> <span class="cf">function</span>(principal, rate, years) {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  principal <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> rate)<span class="sc">^</span>years</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">future_value</span>(<span class="dv">100</span>, <span class="fl">0.10</span>, <span class="dv">2</span>)   <span class="co"># 121</span></span></code></pre></div>
+<p><code>function( )</code> で関数を作り、<code>&lt;-</code>
+で名前を付けます。<code>principal</code> は元金、<code>rate</code>
+は年利、<code>years</code> は年数です。Pythonの
+<code>def future_value(principal, rate, years):</code>
+と同じように、計算に使う値を受け取ります。Rでは <code>{ }</code>
+の最後の行の値が返ります。</p>
+<p>返された値は、変数に入れて別の計算に使えます。</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">future_value</span>(<span class="dv">100</span>, <span class="fl">0.10</span>, <span class="dv">2</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>x <span class="sc">*</span> <span class="dv">2</span>   <span class="co"># 242</span></span></code></pre></div>
+<h2
+id="関数とforで現在価値を合計する">関数とforで現在価値を合計する</h2>
+<p>将来受け取る金額を、今の価値に直す関数を作ります。<code>amount</code>
+は受取額、<code>rate</code> は割引率、<code>years</code>
+は受け取るまでの年数です。</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>present_value <span class="ot">&lt;-</span> <span class="cf">function</span>(amount, rate, years) {</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  amount <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> rate)<span class="sc">^</span>years</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">present_value</span>(<span class="dv">110</span>, <span class="fl">0.10</span>, <span class="dv">1</span>)   <span class="co"># 100</span></span></code></pre></div>
+<p>1年後の110円を10%で割り引くと、現在価値は100円です。</p>
+<p>1年後から5年後まで、毎年1万円を受け取る場合は、各年の現在価値を
+<code>for</code> で足します。割引率は5%です。</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>total <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>) {</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  total <span class="ot">&lt;-</span> total <span class="sc">+</span> <span class="fu">present_value</span>(<span class="dv">10000</span>, <span class="fl">0.05</span>, t)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(total, <span class="dv">2</span>)   <span class="co"># 43294.77</span></span></code></pre></div>
+<p><code>t</code>
+が1から5へ変わるので、受け取りが先の金額ほど長く割り引かれます。合計は約43,294.77円です。Pythonの例と同じく、関数が1回分を計算し、<code>for</code>
+が5回分を合計しています。</p>
+<h1 id="base-rとtidyverse">base Rとtidyverse</h1>
+<p>base Rとtidyverseは、同じRの中で使う道具です。base
+RはR本体に備わる基本機能を指します。tidyverseは、データの読み込み・整理・作図に使う追加のパッケージをまとめたものです。パッケージとは、関数などをひとまとめにして配布する仕組みです。</p>
+<p>Rは、統計解析のために作られた言語Sを受け継いで生まれました。R本体には、数値の計算や表の操作、統計分析、作図の機能が用意されました。その上に、利用者や開発者がパッケージで機能を追加してきました。</p>
+<p>その後、Hadley
+Wickhamらが、データの整理や作図を扱いやすくするパッケージを開発しました。表の操作を担うdplyr、作図を担うggplot2などです。共通の考え方と書き方で使えるこれらのパッケージ群は、2016年にtidyverseという名前でまとめられました。</p>
+<p>この経緯から、同じ処理にも複数の書き方があります。base
+Rでは、表の行や列を直接指定する書き方がよく使われます。tidyverseでは、「行を選ぶ」「列を作る」「集計する」といった操作を、名前の付いた関数で順に並べます。書き方の違いは、同じRの中で使っている道具と、その設計の違いから生まれています。</p>
+<p>たとえば、仮想の株価の表をtidyverseで銘柄ごとに分け、R本体の関数で終値の平均を求められます。1つのスクリプトの中で、両方の道具を組み合わせて使います。</p>
+<h2 id="データフレームとは">データフレームとは</h2>
+<p>データフレームは、行と列からなる表をプログラムの中で扱うためのデータの形です。Excelのシートのように、列に名前があり、行にデータが並びます。</p>
+<p>株価データなら、1行は「ある銘柄の、ある1日」です。日付、銘柄コード、終値、出来高を別々の列に入れると、同じ行にその日の情報がそろいます。</p>
+<p>各列は同じ長さで、列ごとに型を持ちます。日付の列、文字列の銘柄コード、数値の終値を、1つの表にまとめられます。数値の列はベクトルとして計算できるので、全行の終値をまとめて1,000で割る、といった操作ができます。</p>
+<p>CSVは表をファイルに保存する形式です。読み込むと、Rのメモリの中にデータフレームができます。この表に対して、行を選ぶ、列を追加する、平均を求める、といった処理を行います。</p>
+<h2 id="tibbleとdata.frame">tibbleとdata.frame</h2>
+<p>tidyverseでよく使う表の形式は、tibble（ティブル）です。Rの
+<code>data.frame</code>
+を拡張したもので、表示すると行数・列数・各列の型が分かります。<code>tibble()</code>
+で作るほか、<code>read_csv()</code>
+でCSVを読み込んだときもtibbleになります。</p>
+<p>表を操作するdplyrの関数は、tibbleと通常の <code>data.frame</code>
+の両方に使えます。次の比較では、同じ表を操作した結果を比べるため、<code>data.frame()</code>
+で作った表を両方の書き方で使います。</p>
+<h2 id="小さな株価の表で比べる">小さな株価の表で比べる</h2>
+<p>第6回の仮想の株価データから、Auto Aの3日分を使います。まず、R本体の
+<code>data.frame()</code> で表 <code>d</code> を作ります。</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Date =</span> <span class="fu">as.Date</span>(<span class="fu">c</span>(<span class="st">&quot;2024-08-01&quot;</span>, <span class="st">&quot;2024-08-02&quot;</span>, <span class="st">&quot;2024-08-05&quot;</span>)),</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Code =</span> <span class="fu">c</span>(<span class="st">&quot;01110&quot;</span>, <span class="st">&quot;01110&quot;</span>, <span class="st">&quot;01110&quot;</span>),</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">C =</span> <span class="fu">c</span>(<span class="dv">2454</span>, <span class="dv">2492</span>, <span class="dv">2467</span>),</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Vo =</span> <span class="fu">c</span>(<span class="dv">20507300</span>, <span class="dv">28425400</span>, <span class="dv">27465800</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(d)</span></code></pre></div>
+<p><code>Date</code> は日付、<code>Code</code>
+は銘柄コード、<code>C</code> は終値（円）、<code>Vo</code>
+は出来高（株）です。</p>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Code</th>
+<th style="text-align: right;">C</th>
+<th style="text-align: right;">Vo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2024-08-01</td>
+<td>01110</td>
+<td style="text-align: right;">2,454</td>
+<td style="text-align: right;">20,507,300</td>
+</tr>
+<tr>
+<td>2024-08-02</td>
+<td>01110</td>
+<td style="text-align: right;">2,492</td>
+<td style="text-align: right;">28,425,400</td>
+</tr>
+<tr>
+<td>2024-08-05</td>
+<td>01110</td>
+<td style="text-align: right;">2,467</td>
+<td style="text-align: right;">27,465,800</td>
+</tr>
+</tbody>
+</table>
+<p>この表 <code>d</code> を、base
+Rとtidyverseの両方で扱います。tidyverseの関数は、次の行で読み込みます。</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div>
+<h3 id="列を選ぶ">列を選ぶ</h3>
+<p>日付と終値の2列を取り出します。</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># base R</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(d[, <span class="fu">c</span>(<span class="st">&quot;Date&quot;</span>, <span class="st">&quot;C&quot;</span>)])</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># tidyverse</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(d <span class="sc">|&gt;</span> <span class="fu">select</span>(Date, C))</span></code></pre></div>
+<p>base Rの <code>[行, 列]</code>
+は、コンマの前で行、後ろで列を指定します。前を空けると全行が対象になります。列名は文字列で指定します。</p>
+<p>tidyverseの <code>select()</code>
+は、取り出す列の名前を並べます。<code>|&gt;</code>
+は左の表を右の関数に渡す記号です。ここでは、<code>select(d, Date, C)</code>
+と同じ意味です。どちらも日付と終値の2列が出ます。</p>
+<p>教科書では、同じように処理をつなぐ記号として <code>%&gt;%</code>
+もよく使われます。この例の <code>|&gt;</code> を <code>%&gt;%</code>
+に置き換えても、同じ結果になります。この講義のコードは
+<code>|&gt;</code> で統一しています。</p>
+<h3 id="行を選ぶ">行を選ぶ</h3>
+<p>終値が2,470円以上の日を取り出します。</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># base R</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(d[d<span class="sc">$</span>C <span class="sc">&gt;=</span> <span class="dv">2470</span>, ])</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># tidyverse</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(d <span class="sc">|&gt;</span> <span class="fu">filter</span>(C <span class="sc">&gt;=</span> <span class="dv">2470</span>))</span></code></pre></div>
+<p><code>d$C</code> は表 <code>d</code> の終値の列です。base
+Rでは、その列で判定した条件を <code>[行, 列]</code>
+の行の側に置きます。列の側を空けると全列を残します。</p>
+<p>tidyverseでは、<code>filter()</code>
+の中に行を選ぶ条件を書きます。どちらも、終値が2,492円の2024年8月2日だけが残ります。</p>
+<h3 id="列を追加する">列を追加する</h3>
+<p>終値を千円単位にした列を作ります。</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># base R</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>base_result <span class="ot">&lt;-</span> d</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>base_result<span class="sc">$</span>C_thousand_yen <span class="ot">&lt;-</span> base_result<span class="sc">$</span>C <span class="sc">/</span> <span class="dv">1000</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(base_result)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="co"># tidyverse</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>tidy_result <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">C_thousand_yen =</span> C <span class="sc">/</span> <span class="dv">1000</span>)</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(tidy_result)</span></code></pre></div>
+<p>base Rでは、表をコピーし、<code>$</code>
+で新しい列に値を入れます。tidyverseでは、<code>mutate()</code>
+に新しい列の名前と計算式を書きます。作った表を <code>tidy_result</code>
+に入れています。</p>
+<p>どちらにも、2.454、2.492、2.467という列が加わります。元の表
+<code>d</code> と、円単位の列 <code>C</code> はそのまま残ります。</p>
+<h3 id="平均を求める">平均を求める</h3>
+<p>3日間の終値の平均を計算します。</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># base R</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">mean</span>(d<span class="sc">$</span>C))</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># tidyverse</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(d <span class="sc">|&gt;</span> <span class="fu">summarise</span>(<span class="at">mean_close =</span> <span class="fu">mean</span>(C)))</span></code></pre></div>
+<p>計算はどちらもR本体の <code>mean()</code> が担当します。base
+Rの例は数値を返し、tidyverseの <code>summarise()</code> は
+<code>mean_close</code>
+という列を持つ1行の表を返します。値はどちらも、(2,454 + 2,492 + 2,467) ÷
+3 = 2,471円です。</p>
+<p>ここまでの比較は、<a
+href="workbook/02_base_r_and_tidyverse.R">02_base_r_and_tidyverse.R</a>
+にもまとめてあります。続いて、同じ操作を3銘柄・2年分のCSVに使います。</p>
+<h1 id="株価csvを読み込む">株価CSVを読み込む</h1>
+<h2 id="読み込みと型">読み込みと型</h2>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>prices <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;data/prices.csv&quot;</span>,</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">col_types =</span> <span class="fu">cols</span>(<span class="at">Date =</span> <span class="fu">col_date</span>(), <span class="at">Code =</span> <span class="fu">col_character</span>())</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(prices)   <span class="co"># 1464</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ncol</span>(prices)   <span class="co"># 14</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(prices)</span></code></pre></div>
+<p>3銘柄・488日分で、1,464行あります。1行は1つの銘柄の1日です。日付は実際の営業日で、価格は仮想の値です。<code>read_csv()</code>
+はCSVをtibbleとして読み込みます。pandasでCSVをDataFrameとして読む操作にあたります。</p>
+<p><code>col_types</code> で、<code>Date</code>
+を日付、<code>Code</code>
+を文字列として読みます。銘柄コードの先頭の0を保つためです。ほかの列は数値として読み込まれます。</p>
+<p>pandasとtidyverseの操作は、次のように対応します。</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>操作</th>
+<th>pandas</th>
+<th>R（tidyverse）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>読む</td>
+<td><code>pd.read_csv()</code></td>
+<td><code>read_csv()</code></td>
+</tr>
+<tr>
+<td>行数・列数</td>
+<td><code>df.shape</code></td>
+<td><code>nrow()</code>、<code>ncol()</code></td>
+</tr>
+<tr>
+<td>型と先頭の値</td>
+<td><code>df.info()</code>、<code>df.head()</code></td>
+<td><code>glimpse()</code></td>
+</tr>
+<tr>
+<td>列を選ぶ</td>
+<td><code>df[["A", "B"]]</code></td>
+<td><code>select(A, B)</code></td>
+</tr>
+<tr>
+<td>行を絞る</td>
+<td><code>df[df["A"] == 1]</code></td>
+<td><code>filter(A == 1)</code></td>
+</tr>
+<tr>
+<td>列を作る</td>
+<td><code>df.assign(C = ...)</code></td>
+<td><code>mutate(C = ...)</code></td>
+</tr>
+<tr>
+<td>群ごとに集計する</td>
+<td><code>df.groupby("A").agg(...)</code></td>
+<td><code>group_by(A)</code> と <code>summarise(...)</code></td>
+</tr>
+<tr>
+<td>欠損を数える</td>
+<td><code>df.isna().sum()</code></td>
+<td><code>colSums(is.na(df))</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="数に見える文字列を直す">数に見える文字列を直す</h2>
+<p>小さなCSV <code>prices_short.csv</code>
+の終値は、<code>"2,467"</code>
+のように桁区切りのコンマが付いています。いったん文字列として読み、<code>parse_number()</code>
+で数値に変換します。</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>short <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;data/prices_short.csv&quot;</span>,</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">col_types =</span> <span class="fu">cols</span>(<span class="at">Date =</span> <span class="fu">col_date</span>(), <span class="at">Code =</span> <span class="fu">col_character</span>(),</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">C =</span> <span class="fu">col_character</span>())</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(short<span class="sc">$</span>C)   <span class="co"># &quot;character&quot;</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>short <span class="ot">&lt;-</span> short <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">C =</span> <span class="fu">parse_number</span>(C))</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(short<span class="sc">$</span>C)   <span class="co"># &quot;numeric&quot;</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>short <span class="sc">|&gt;</span> <span class="fu">select</span>(Date, Code, C)</span></code></pre></div>
+<p><code>parse_number("2,467")</code> は <code>2467</code>
+になります。終値の空欄は <code>NA</code>
+のままです。銘柄コードは計算する数ではなく名前として使うので、<code>"01110"</code>
+などの文字列を保ちます。</p>
+<h2 id="銘柄と日付を確かめる">銘柄と日付を確かめる</h2>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">n_distinct</span>(prices<span class="sc">$</span>Code)   <span class="co"># 3</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">n_distinct</span>(prices<span class="sc">$</span>Date)   <span class="co"># 488</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>prices <span class="sc">|&gt;</span> <span class="fu">count</span>(Code)</span></code></pre></div>
+<p><code>n_distinct()</code>
+は異なる値の数を数えます。銘柄コードは3種類、日付は488日あります。<code>count(Code)</code>
+では、銘柄ごとの行数がどれも488と分かります。</p>
+<p><code>prices |&gt; count(Code)</code> は、表 <code>prices</code> を
+<code>count()</code> に渡して銘柄ごとに数える書き方です。</p>
+<h1 id="株価csvで行と列を選ぶ">株価CSVで行と列を選ぶ</h1>
+<h2 id="select">select</h2>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>prices1 <span class="ot">&lt;-</span> prices <span class="sc">|&gt;</span> <span class="fu">select</span>(Date, Code, C, AdjC, Vo)</span></code></pre></div>
+<p>14列から、次の5列を残します。</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Date</code></td>
+<td>日付</td>
+</tr>
+<tr>
+<td><code>Code</code></td>
+<td>銘柄コード。01110はAuto A、02220はAuto B、03330はRetail C</td>
+</tr>
+<tr>
+<td><code>C</code></td>
+<td>終値（円）</td>
+</tr>
+<tr>
+<td><code>AdjC</code></td>
+<td>株式分割を調整した終値（円）</td>
+</tr>
+<tr>
+<td><code>Vo</code></td>
+<td>出来高（株）</td>
+</tr>
+</tbody>
+</table>
+<p>Auto Bは2025年4月1日に1株を2株に分割しています。<code>AdjC</code>
+は分割前の価格も分割後と同じ1株の単位にそろえた値です。期間を通じた平均には
+<code>AdjC</code> を使います。</p>
+<h2 id="filter">filter</h2>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>auto_a <span class="ot">&lt;-</span> prices1 <span class="sc">|&gt;</span> <span class="fu">filter</span>(Code <span class="sc">==</span> <span class="st">&quot;01110&quot;</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(auto_a)   <span class="co"># 488</span></span></code></pre></div>
+<p>条件に合うAuto
+Aの488行が残ります。銘柄コードは文字列なので引用符で囲み、値が等しいかを
+<code>==</code> で調べています。</p>
+<h2 id="欠損と0">欠損と0</h2>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colSums</span>(<span class="fu">is.na</span>(prices1))</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>prices1 <span class="sc">|&gt;</span> <span class="fu">filter</span>(<span class="fu">is.na</span>(C))</span></code></pre></div>
+<p><code>C</code> と <code>AdjC</code>
+に欠損が1つずつあります。同じ行にある、2024年8月5日のRetail
+Cの値です。この日は売買が成立せず、終値は
+<code>NA</code>、出来高は0です。終値がないことと、取引された株数が0であることを、それぞれ別の列で表しています。</p>
+<h1 id="列を作る">列を作る</h1>
+<h2 id="mutate">mutate</h2>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>prices2 <span class="ot">&lt;-</span> prices1 <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">C_thousand_yen =</span> C <span class="sc">/</span> <span class="dv">1000</span>)</span></code></pre></div>
+<p>3日分の比較と同じ計算を、3銘柄・2年分の終値に使います。千円単位の列
+<code>C_thousand_yen</code> が加わり、元の <code>C</code>
+は円単位のまま残ります。</p>
+<h2 id="case_when">case_when</h2>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>prices2 <span class="ot">&lt;-</span> prices2 <span class="sc">|&gt;</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Name =</span> <span class="fu">case_when</span>(</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    Code <span class="sc">==</span> <span class="st">&quot;01110&quot;</span> <span class="sc">~</span> <span class="st">&quot;Auto A&quot;</span>,</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    Code <span class="sc">==</span> <span class="st">&quot;02220&quot;</span> <span class="sc">~</span> <span class="st">&quot;Auto B&quot;</span>,</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    Code <span class="sc">==</span> <span class="st">&quot;03330&quot;</span> <span class="sc">~</span> <span class="st">&quot;Retail C&quot;</span>,</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">&quot;その他&quot;</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  ))</span></code></pre></div>
+<p><code>case_when()</code> は上から条件を調べ、最初に当てはまった行の
+<code>~</code>
+の右の値を入れます。ここでは銘柄コードに対応する名前を付けています。</p>
+<h2 id="if_else">if_else</h2>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>prices2 <span class="ot">&lt;-</span> prices2 <span class="sc">|&gt;</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">volume_group =</span> <span class="fu">if_else</span>(Vo <span class="sc">&gt;=</span> <span class="dv">10000000</span>,</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                                <span class="st">&quot;1000万株以上&quot;</span>, <span class="st">&quot;1000万株未満&quot;</span>))</span></code></pre></div>
+<p><code>if_else(条件, 当てはまるとき, 当てはまらないとき)</code>
+で2つに分けます。ここでは、その日の出来高で行を分類しています。</p>
+<h1 id="前日からの収益率を計算する">前日からの収益率を計算する</h1>
+<p>前の営業日の調整済み終値で当日の値を割り、1を引くと収益率になります。100を掛けて%で表示します。Pythonの
+<code>shift(1)</code> にあたるのが、dplyrの <code>lag()</code>
+です。</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>returns <span class="ot">&lt;-</span> prices2 <span class="sc">|&gt;</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Code, Date) <span class="sc">|&gt;</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Code) <span class="sc">|&gt;</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">previous_close =</span> <span class="fu">lag</span>(AdjC),</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">Change =</span> (AdjC <span class="sc">/</span> previous_close <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code></pre></div>
+<p><code>arrange()</code>
+で銘柄ごとに日付順に並べ、<code>group_by()</code>
+で銘柄を分けます。<code>lag(AdjC)</code>
+は、同じ銘柄の1つ前の行の値を返します。各銘柄の最初の行は、比べる前日の価格がないので
+<code>Change</code> が <code>NA</code>
+になります。価格が欠損した日は、その日と次の営業日の収益率が
+<code>NA</code> になります。</p>
+<p>Auto Bの株式分割の日を取り出します。</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>returns <span class="sc">|&gt;</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Code <span class="sc">==</span> <span class="st">&quot;02220&quot;</span>, Date <span class="sc">==</span> <span class="fu">as.Date</span>(<span class="st">&quot;2025-04-01&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Date, AdjC, previous_close, Change)</span></code></pre></div>
+<p>前日の調整済み終値は1,113.5円、当日は1,117円です。収益率は約0.31%です。調整済み終値を使うと、株式分割の前後を同じ株数の基準で比べられます。</p>
+<h1 id="銘柄ごとに集計する">銘柄ごとに集計する</h1>
+<h2 id="group_byとsummarise">group_byとsummarise</h2>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>price_summary <span class="ot">&lt;-</span> prices2 <span class="sc">|&gt;</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Code, Name) <span class="sc">|&gt;</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">days =</span> <span class="fu">n</span>(),</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">priced_days =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(AdjC)),</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_adjusted_close =</span> <span class="fu">mean</span>(AdjC, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>price_summary</span></code></pre></div>
+<p><code>group_by()</code> で銘柄ごとに分け、<code>summarise()</code>
+で1銘柄1行へまとめます。<code>n()</code>
+は行数、ここではCSVに記録されている日数です。<code>priced_days</code>
+は調整済み終値がある日数です。</p>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 22%" />
+<col style="width: 22%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr>
+<th>Code</th>
+<th>Name</th>
+<th style="text-align: right;">days</th>
+<th style="text-align: right;">priced_days</th>
+<th
+style="text-align: right;">調整済み終値の平均（円、小数第2位まで）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01110</td>
+<td>Auto A</td>
+<td style="text-align: right;">488</td>
+<td style="text-align: right;">488</td>
+<td style="text-align: right;">2,703.98</td>
+</tr>
+<tr>
+<td>02220</td>
+<td>Auto B</td>
+<td style="text-align: right;">488</td>
+<td style="text-align: right;">488</td>
+<td style="text-align: right;">1,296.36</td>
+</tr>
+<tr>
+<td>03330</td>
+<td>Retail C</td>
+<td style="text-align: right;">488</td>
+<td style="text-align: right;">487</td>
+<td style="text-align: right;">4,077.83</td>
+</tr>
+</tbody>
+</table>
+<p><code>na.rm = TRUE</code> で欠損を除いて計算します。Retail
+Cの平均には、価格がある487日分を使っています。<code>.groups = "drop"</code>
+は、集計後の表にグループ分けを残さない指定です。</p>
+<h2 id="欠損の行を除く">欠損の行を除く</h2>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>priced <span class="ot">&lt;-</span> prices2 <span class="sc">|&gt;</span> <span class="fu">drop_na</span>(AdjC)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(priced)   <span class="co"># 1463</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>priced <span class="sc">|&gt;</span> <span class="fu">count</span>(Code)</span></code></pre></div>
+<p><code>drop_na(AdjC)</code>
+は、調整済み終値が欠損している行を除きます。Auto AとAuto
+Bは488行、Retail Cは487行になります。</p>
+<h1 id="元のcsvと照合する">元のCSVと照合する</h1>
+<h2 id="日分の終値">3日分の終値</h2>
+<p>CSVからAuto Aの同じ3日分を取り出し、最初に作った表 <code>d</code>
+と比べます。</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>three_days <span class="ot">&lt;-</span> auto_a <span class="sc">|&gt;</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Date <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2024-08-01&quot;</span>), Date <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2024-08-05&quot;</span>))</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>three_days <span class="sc">|&gt;</span> <span class="fu">select</span>(Date, C)</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(three_days<span class="sc">$</span>C)   <span class="co"># 2471</span></span></code></pre></div>
+<p>日付と終値は、比較に使った表 <code>d</code>
+の3行と一致します。CSVから計算した平均も同じ2,471円になります。</p>
+<h2 id="naを含む平均">NAを含む平均</h2>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(<span class="fu">c</span>(<span class="dv">3872</span>, <span class="dv">3914</span>, <span class="cn">NA</span>))</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(<span class="fu">c</span>(<span class="dv">3872</span>, <span class="dv">3914</span>, <span class="cn">NA</span>), <span class="at">na.rm =</span> <span class="cn">TRUE</span>)   <span class="co"># 3893</span></span></code></pre></div>
+<p>同じ3日間のRetail Cには、終値のない日が1日あります。通常の
+<code>mean()</code> は <code>NA</code> を返します。欠損を除くと、(3,872
++ 3,914) ÷ 2 = 3,893円です。平均に使った日数は2日です。</p>
+<h1 id="確認表を残す">確認表を残す</h1>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">&quot;output&quot;</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>check_rows <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">step =</span> <span class="fu">c</span>(<span class="st">&quot;all rows&quot;</span>, <span class="st">&quot;AdjC not NA&quot;</span>, <span class="st">&quot;Auto A&quot;</span>),</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">rows =</span> <span class="fu">c</span>(<span class="fu">nrow</span>(prices), <span class="fu">nrow</span>(priced), <span class="fu">nrow</span>(auto_a))</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(check_rows, <span class="st">&quot;output/price_check_rows.csv&quot;</span>)</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(price_summary, <span class="st">&quot;output/price_summary.csv&quot;</span>)</span></code></pre></div>
+<p>読み込んだ行数1,464、価格がある行数1,463、Auto
+Aの行数488を保存します。銘柄別の平均も
+<code>output/price_summary.csv</code>
+に残ります。元のCSVと集計結果を見比べると、どの日の価格が平均に含まれているかを辿れます。</p>
+<h1 id="ggplot2で株価を描く">ggplot2で株価を描く</h1>
+<p>第6回では、PythonのmatplotlibでAuto
+Aの終値を折れ線にし、3社の調整済み終値を初日100にそろえて比べました。同じCSVから、Rのggplot2でこの2枚を描きます。ggplot2はtidyverseに含まれるので、<code>library(tidyverse)</code>
+で使えます。</p>
+<h2 id="auto-aの終値を折れ線にする">Auto Aの終値を折れ線にする</h2>
+<p><code>auto_a</code> は、先ほど銘柄コード <code>01110</code>
+で取り出した表です。横軸を日付 <code>Date</code>、縦軸を終値
+<code>C</code> にします。</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>p_close <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(auto_a, <span class="fu">aes</span>(<span class="at">x =</span> Date, <span class="at">y =</span> C)) <span class="sc">+</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">&quot;steelblue&quot;</span>, <span class="at">linewidth =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Auto A: closing price, 2024-01-04 to 2025-12-30&quot;</span>,</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Date&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Yen per share&quot;</span>,</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;Source: Fictional data&quot;</span></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(p_close)</span></code></pre></div>
+<p><code>ggplot()</code> に表を渡し、<code>aes()</code>
+で列を軸に対応させます。Pythonの
+<code>ax.plot(auto_a["Date"], auto_a["C"])</code>
+にあたるのが、<code>aes(x = Date, y = C)</code> と
+<code>geom_line()</code> の組み合わせです。</p>
+<p><code>geom_line()</code> は日付順に線を結びます。<code>labs()</code>
+はタイトル・軸の名前・出典を付け、<code>theme_minimal()</code>
+は背景や目盛りの見た目を整えます。図を構成する部品は <code>+</code>
+でつなぎます。表の処理で使う <code>|&gt;</code>
+とは記号が変わります。</p>
+<figure>
+<img src="assets/ggplot_auto_a_close.png"
+alt="Auto Aの終値：2024年1月4日〜2025年12月30日。横軸は日付、縦軸は円です。出所：仮想の株価データ。" />
+<figcaption aria-hidden="true">Auto
+Aの終値：2024年1月4日〜2025年12月30日。横軸は日付、縦軸は円です。出所：仮想の株価データ。</figcaption>
+</figure>
+<h2
+id="最大値の点を元のcsvで確かめる">最大値の点を元のCSVで確かめる</h2>
+<p>Auto Aの調整済み終値が最大の日を取り出します。Pythonの
+<code>idxmax()</code> で最大値の行を探した例を、Rでは
+<code>slice_max()</code> で書けます。</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>peak <span class="ot">&lt;-</span> prices <span class="sc">|&gt;</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">csv_line =</span> <span class="fu">row_number</span>() <span class="sc">+</span> <span class="dv">1</span><span class="dt">L</span>) <span class="sc">|&gt;</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Code <span class="sc">==</span> <span class="st">&quot;01110&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(AdjC, <span class="at">n =</span> <span class="dv">1</span>)</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>peak <span class="sc">|&gt;</span> <span class="fu">select</span>(Date, Code, AdjC, csv_line)</span></code></pre></div>
+<p><code>row_number()</code>
+でCSVを読み込んだ順に1から番号を付けます。CSVの1行目は列名なので、1を足すとファイルの行番号になります。行を絞る前に番号を付けることで、元のCSVの位置が残ります。</p>
+<p>最大値は2025年12月24日の3,119円で、<code>data/prices.csv</code>
+の485行目です。ファイルの同じ行でも、日付・銘柄コード・価格を確認できます。</p>
+<p>Auto Aは <code>C</code> と <code>AdjC</code>
+が同じなので、先ほどの終値の折れ線にこの点を重ねられます。</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>p_peak <span class="ot">&lt;-</span> p_close <span class="sc">+</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> peak, <span class="fu">aes</span>(<span class="at">y =</span> AdjC), <span class="at">color =</span> <span class="st">&quot;red&quot;</span>, <span class="at">size =</span> <span class="dv">3</span>)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(p_peak)</span></code></pre></div>
+<p><code>geom_point()</code>
+に最大値の表を渡すと、その日付と価格の位置に赤い点が加わります。線と点は、同じ図の部品として
+<code>+</code> で重ねられます。</p>
+<figure>
+<img src="assets/ggplot_auto_a_peak.png"
+alt="Auto Aの終値の最大値を赤い点で表示しています。2025年12月24日の3,119円は、元のCSVの485行目に対応します。" />
+<figcaption aria-hidden="true">Auto
+Aの終値の最大値を赤い点で表示しています。2025年12月24日の3,119円は、元のCSVの485行目に対応します。</figcaption>
+</figure>
+<h2 id="初日を100にして3社を比べる">初日を100にして3社を比べる</h2>
+<p><code>prices2</code> には、3社の調整済み終値 <code>AdjC</code>
+と会社名 <code>Name</code>
+が入っています。銘柄ごとに日付順に並べ、各日の価格を最初の日の価格で割って100を掛けます。</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>indexed <span class="ot">&lt;-</span> prices2 <span class="sc">|&gt;</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Code, Date) <span class="sc">|&gt;</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Code) <span class="sc">|&gt;</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Index =</span> AdjC <span class="sc">/</span> <span class="fu">first</span>(AdjC) <span class="sc">*</span> <span class="dv">100</span>) <span class="sc">|&gt;</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code></pre></div>
+<p><code>first(AdjC)</code>
+は、それぞれの銘柄の最初の日の調整済み終値です。<code>Index</code>
+が110なら、初日から10%上がっています。</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>p_index <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(indexed, <span class="fu">aes</span>(<span class="at">x =</span> Date, <span class="at">y =</span> Index, <span class="at">color =</span> Name)) <span class="sc">+</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;3 companies: adjusted closing price&quot;</span>,</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">&quot;2024-01-04 = 100&quot;</span>,</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Date&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Index&quot;</span>, <span class="at">color =</span> <span class="st">&quot;Company&quot;</span>,</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;Source: Fictional data&quot;</span></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(p_index)</span></code></pre></div>
+<p><code>aes(color = Name)</code>
+で会社ごとに線の色が変わり、凡例も付きます。Pythonでは <code>for</code>
+で銘柄を1つずつ選んで線を重ねました。ggplot2では、会社名の列を色に対応させると、3社分の線をまとめて描けます。</p>
+<p>最初の図の <code>color = "steelblue"</code>
+は、線全体に決まった色を付ける指定です。2枚目の
+<code>aes(color = Name)</code>
+は、データの値に応じて色を分ける指定です。</p>
+<figure>
+<img src="assets/ggplot_prices_index.png"
+alt="3社の調整済み終値を2024年1月4日＝100として比較した図。出所：仮想の株価データ。" />
+<figcaption
+aria-hidden="true">3社の調整済み終値を2024年1月4日＝100として比較した図。出所：仮想の株価データ。</figcaption>
+</figure>
+<p>2025年12月30日の値は、Auto AとRetail Cが113.8、Auto
+Bが96.0です。初日からの変化は、それぞれ13.8%の上昇、13.8%の上昇、4.0%の下落です。</p>
+<h2 id="図を保存する">図を保存する</h2>
+<p><code>ggsave()</code>
+にファイル名と図を渡すと、PNGとして保存できます。</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">&quot;output&quot;</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">&quot;output/ggplot_auto_a_close.png&quot;</span>, <span class="at">plot =</span> p_close,</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">width =</span> <span class="dv">8</span>, <span class="at">height =</span> <span class="dv">4</span>, <span class="at">dpi =</span> <span class="dv">150</span>)</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">&quot;output/ggplot_auto_a_peak.png&quot;</span>, <span class="at">plot =</span> p_peak,</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">width =</span> <span class="dv">8</span>, <span class="at">height =</span> <span class="dv">4</span>, <span class="at">dpi =</span> <span class="dv">150</span>)</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">&quot;output/ggplot_prices_index.png&quot;</span>, <span class="at">plot =</span> p_index,</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">width =</span> <span class="dv">8</span>, <span class="at">height =</span> <span class="fl">4.5</span>, <span class="at">dpi =</span> <span class="dv">150</span>)</span></code></pre></div>
+<p>3枚の図は <code>Lecture11/output/</code>
+で確認できます。型の変換、収益率の計算、CSVの読み込みから作図・保存までのコードは、<a
+href="workbook/04_ggplot_prices.R">04_ggplot_prices.R</a>
+にまとめています。</p>
+<p>書き方の詳細は、ggplot2の公式資料の <a
+href="https://ggplot2.tidyverse.org/reference/aes.html">aes()</a>、<a
+href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line()</a>、<a
+href="https://ggplot2.tidyverse.org/reference/ggsave.html">ggsave()</a>
+で確認できます。</p>
+<h1
+id="j-quantsで自動車3社の株価を比べる">J-Quantsで自動車3社の株価を比べる</h1>
+<p>仮想の株価で使った読み方を、実在する自動車メーカー3社の比較に広げます。トヨタ自動車、ホンダ、日産自動車の2025年1〜6月の日次株価をJ-Quantsから取得します。</p>
+<table>
+<thead>
+<tr>
+<th>会社</th>
+<th>証券コード</th>
+<th>J-Quantsのコード</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>トヨタ自動車</td>
+<td>7203</td>
+<td>72030</td>
+</tr>
+<tr>
+<td>ホンダ（本田技研工業）</td>
+<td>7267</td>
+<td>72670</td>
+</tr>
+<tr>
+<td>日産自動車</td>
+<td>7201</td>
+<td>72010</td>
+</tr>
+</tbody>
+</table>
+<p>3社は、J-Quantsの33業種では「輸送用機器」に分類されます。無料プランには12週間の遅れがあるため、この例では2025年上半期を使います。</p>
+<h2 id="apiキーを用意する">APIキーを用意する</h2>
+<p><a
+href="https://jpx-jquants.com/ja">J-Quants</a>で利用登録し、利用プランを選びます。この例は無料のFreeプランで取得できます。ログイン後、ダッシュボードの「API
+Keys」でAPIキーを発行し、コピーします。取得済みのキーがあれば、そのキーを使えます。</p>
+<p>キーの保存先は、各回のフォルダをまとめている <code>金融論</code>
+の直下にある <code>api_key.txt</code> です。VS Codeで
+<code>金融論</code>
+フォルダを開くと、この場所にファイルを作成・編集できます。</p>
+<pre class="text"><code>金融論/
+├── api_key.txt
+└── Lecture11/
+    ├── 03_jquants_auto.R
+    ├── data/
+    └── output/</code></pre>
+<p><code>api_key.txt</code> に次の形で保存します。<code>=</code>
+の右側を、発行されたAPIキーに置き換えます。ほかのAPIの設定が入っている場合は、別の行に追加できます。</p>
+<pre class="text"><code>JQUANTS_API_KEY=ここにコピーしたAPIキー</code></pre>
+<p><code>Lecture11</code>
+を作業場所にすると、<code>03_jquants_auto.R</code>
+は1つ上のフォルダにある <code>api_key.txt</code>
+から、この行のキーを読み込めます。APIキーは利用者を認証する情報なので、コードや提出物と分けて自分の手元に保存します。</p>
+<p>保存後の接続確認は、Codexに頼めます。</p>
+<pre class="text"><code>金融論フォルダのapi_key.txtにJ-QuantsのAPIキーを保存したので、
+Lecture11の03_jquants_auto.Rで3社の株価を取得できるか確認して。
+キーの値は表示しないで。</code></pre>
+<h2 id="apiに送る情報">APIに送る情報</h2>
+<p>APIへの接続では、取得先のURL、銘柄や期間の条件、利用者を確認するAPIキーを送ります。J-Quants
+V2では、HTTPのGETという方法でデータを求めます。</p>
+<p>トヨタの2025年上半期の株価なら、接続先は次の形になります。</p>
+<pre class="text"><code>https://api.jquants.com/v2/equities/bars/daily?code=72030&amp;from=2025-01-01&amp;to=2025-06-30</code></pre>
+<p><code>/equities/bars/daily</code>
+が日次株価の取得先です。<code>?</code>
+の後ろに銘柄コードと期間を付け、<code>&amp;</code>
+で条件をつないでいます。会社名や業種を取得するときは、取得先が
+<code>/equities/master</code> に変わります。</p>
+<p>APIキーは、リクエストに添えるヘッダーの <code>x-api-key</code>
+に入れます。サーバーはキーから利用者と契約プランを確認します。スクリプトは
+<code>金融論/api_key.txt</code> から読み込んだ値を送ります。</p>
+<h2 id="jsonをrの表にする">JSONをRの表にする</h2>
+<p>接続が成功すると、J-QuantsからJSONが返ります。その中の
+<code>data</code> に、1日分ずつの株価が並んでいます。R本体の
+<code>url()</code> で接続先とヘッダーを指定し、jsonliteパッケージの
+<code>fromJSON()</code> でJSONをRのデータに変換します。</p>
+<p>スクリプトの処理を1社分に絞ると、次のようになります。<code>api_key</code>
+は、ファイルから読み込んだキーを入れる変数です。</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>address <span class="ot">&lt;-</span> <span class="fu">paste0</span>(</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;https://api.jquants.com/v2/equities/bars/daily&quot;</span>,</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;?code=72030&amp;from=2025-01-01&amp;to=2025-06-30&quot;</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>connection <span class="ot">&lt;-</span> <span class="fu">url</span>(address, <span class="at">headers =</span> <span class="fu">c</span>(<span class="st">&quot;x-api-key&quot;</span> <span class="ot">=</span> api_key),</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>                  <span class="at">method =</span> <span class="st">&quot;libcurl&quot;</span>)</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>body <span class="ot">&lt;-</span> jsonlite<span class="sc">::</span><span class="fu">fromJSON</span>(connection)</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>toyota <span class="ot">&lt;-</span> body<span class="sc">$</span>data</span></code></pre></div>
+<p><code>body</code> は返答全体、<code>body$data</code>
+はその中の株価の表です。続いて <code>Date</code>
+を日付型に直し、日付順に並べると、CSVから読んだ表と同じように集計や作図ができます。</p>
+<p>返答が複数ページに分かれると、続きの位置を示す
+<code>pagination_key</code> が返ります。作例の <code>fetch()</code>
+は、その値を付けて続きを取得し、1つの表にまとめます。接続処理を関数にしてあるので、同じ方法で3社を順番に取得できます。</p>
+<h2 id="接続結果を確かめる">接続結果を確かめる</h2>
+<p>返答にはHTTPステータスという番号も付いています。200は取得成功、401や403はキーや利用権限などの確認が必要な場合、429は短時間の依頼が多すぎる場合です。今回のスクリプトでは依頼の間を13秒あけ、無料プランの回数制限に合わせています。</p>
+<p>取得できたら、会社名・銘柄コード・日付の範囲・行数を表で確かめます。今回の3社はそれぞれ119行で、2025年1月6日から6月30日までの価格が入っています。</p>
+<h2 id="取得から作図まで">取得から作図まで</h2>
+<p><a href="workbook/03_jquants_auto.R">03_jquants_auto.R</a>
+は、会社名と業種を確認し、調整済み終値を取得して2枚の図を作るスクリプトです。接続とJSONから表への変換を関数にまとめています。<code>Lecture11/</code>
+を作業場所にして、次のように実行できます。</p>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;03_jquants_auto.R&quot;</span>)</span></code></pre></div>
+<p>図は <code>output/jquants_auto_close.png</code> と
+<code>output/jquants_auto_index.png</code>
+に保存されます。取得した株価と比較表も同じフォルダに残ります。</p>
+<h2 id="円で株価を見る">円で株価を見る</h2>
+<p>1枚目は、調整済み終値を円単位で重ねた図です。各社の価格の水準と、期間中の動きを見られます。</p>
+<figure>
+<img src="assets/jquants_auto_close.png"
+alt="自動車3社の調整済み終値：2025年1〜6月、単位は円。出所：J-Quants API V2。" />
+<figcaption
+aria-hidden="true">自動車3社の調整済み終値：2025年1〜6月、単位は円。出所：J-Quants
+API V2。</figcaption>
+</figure>
+<h2 id="最初の日を100にそろえる">最初の日を100にそろえる</h2>
+<p>2枚目は、各社の調整済み終値を最初の日の値で割り、100を掛けた図です。3社に共通して価格がある119営業日を使い、2025年1月6日を出発点にしています。110なら初日より10%高く、90なら10%低い価格です。</p>
+<figure>
+<img src="assets/jquants_auto_index.png"
+alt="自動車3社の価格指数：2025年1〜6月、2025年1月6日を100。出所：J-Quants API V2。" />
+<figcaption
+aria-hidden="true">自動車3社の価格指数：2025年1〜6月、2025年1月6日を100。出所：J-Quants
+API V2。</figcaption>
+</figure>
+<p>6月30日の指数は、トヨタが82.8、ホンダが88.3、日産が73.7です。この期間は3社とも初日の100を下回り、下落率が最も大きいのは日産です。</p>
+<p>線を描く部分では、R本体の <code>plot()</code> と <code>lines()</code>
+を使います。<code>plot()</code>
+でトヨタの線と座標軸を描き、<code>lines()</code>
+でホンダと日産の線を加えています。</p>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(auto_dates, auto_index[, <span class="st">&quot;Toyota&quot;</span>], <span class="at">type =</span> <span class="st">&quot;l&quot;</span>,</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylim =</span> <span class="fu">range</span>(auto_index), <span class="at">col =</span> <span class="st">&quot;#2266AA&quot;</span>, <span class="at">lwd =</span> <span class="dv">2</span>,</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">&quot;Date&quot;</span>, <span class="at">ylab =</span> <span class="st">&quot;Index (first day = 100)&quot;</span>)</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(auto_dates, auto_index[, <span class="st">&quot;Honda&quot;</span>], <span class="at">col =</span> <span class="st">&quot;#CC5533&quot;</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(auto_dates, auto_index[, <span class="st">&quot;Nissan&quot;</span>], <span class="at">col =</span> <span class="st">&quot;#228866&quot;</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">&quot;bottomleft&quot;</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">&quot;Toyota&quot;</span>, <span class="st">&quot;Honda&quot;</span>, <span class="st">&quot;Nissan&quot;</span>),</span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">col =</span> <span class="fu">c</span>(<span class="st">&quot;#2266AA&quot;</span>, <span class="st">&quot;#CC5533&quot;</span>, <span class="st">&quot;#228866&quot;</span>), <span class="at">lty =</span> <span class="dv">1</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span></code></pre></div>
+<p>同じ期間でも、株価の水準と、出発点からの変化率では見える関係が変わります。1枚目は円での水準、2枚目は初日からの値動きを比較する図です。</p>
+<h1 id="この回の要点">この回の要点</h1>
+<ul>
+<li>base Rとtidyverseは同じRの中で組み合わせて使えます。</li>
+<li>株価CSVの1行は1銘柄の1日です。銘柄コードは文字列、日付は日付の型で読みます。</li>
+<li><code>select()</code>、<code>filter()</code>、<code>mutate()</code>
+で表を整え、<code>group_by()</code> と <code>summarise()</code>
+で銘柄別に集計します。</li>
+<li>欠損を除くと、平均に使う日数も変わります。行数と価格のある日数を一緒に確かめます。</li>
+</ul>
+</body>
+</html>
