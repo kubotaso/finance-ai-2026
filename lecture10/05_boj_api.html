@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja" xml:lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.13" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>第10回（5）　日銀APIで日本の金利を取得する</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style>
+/* 投影用。browserの拡大（⌘+）で読む前提。グラフは本文幅いっぱい、写真と絵は右に回り込む小さな挿絵。 */
+:root { --ink:#17233c; --navy:#173a68; --red:#b23a48; --gray:#6b7280; --bg:#ffffff; --band:#f3f6fa; }
+html { font-size: 20px; }
+body { max-width: 48rem; margin: 0 auto; padding: 2rem 1.2rem 6rem; font-family: "Hiragino Sans","Yu Gothic",sans-serif;
+       line-height: 1.85; color: var(--ink); background: var(--bg); }
+h1 { font-size: 1.9rem; color: var(--navy); margin-top: 3.2rem; padding-top: 1rem; border-top: 4px solid var(--navy); line-height: 1.3; clear: both; }
+h2 { font-size: 1.35rem; color: var(--navy); margin-top: 2.4rem; }
+h3 { font-size: 1.1rem; color: var(--navy); margin-top: 1.8rem; }
+header#title-block-header h1 { border: 0; margin-top: 0; font-size: 2.2rem; }
+p { margin: 0.9rem 0; }
+strong { color: var(--red); font-weight: 600; }
+blockquote { border-left: 5px solid var(--navy); background: var(--band); margin: 1.2rem 0; padding: 0.6rem 1rem; }
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; margin: 1rem 0; clear: both; }
+th, td { border-bottom: 1px solid #d5dbe5; padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; }
+th { background: #e8eef6; color: var(--navy); }
+figure img { width: 100%; height: auto; display: block; border-radius: 4px; }
+figcaption { font-size: 0.78rem; color: var(--gray); margin-top: 0.4rem; line-height: 1.5; }
+/* グラフ：本文幅いっぱい。回り込みの下に置く。 */
+figure.chart { width: 100%; clear: both; margin: 1.6rem 0; }
+/* 写真と絵：右に回り込む挿絵。幅は本文の36%。連続するときは縦に積む。写真は3:2、絵は1:1に切り抜く。 */
+figure.photo, figure.poster { width: 36%; float: right; clear: right; margin: 0.2rem 0 1rem 1.5rem; }
+figure.photo img { aspect-ratio: 3 / 2; object-fit: cover; object-position: center top; }
+figure.poster img { aspect-ratio: 1 / 1; object-fit: cover; object-position: center; }
+.math.display { clear: both; }
+details { background: var(--band); padding: 0.6rem 1rem; margin: 1rem 0; border-radius: 4px; clear: both; }
+details summary { cursor: pointer; color: var(--navy); font-weight: 600; }
+code { font-family: "SF Mono", Menlo, monospace; font-size: 0.85em; background: #eef1f6; padding: 0 0.25em; }
+pre { background: #f6f8fb; padding: 0.8rem 1rem; overflow-x: auto; font-size: 0.72rem; line-height: 1.5; clear: both; }
+pre code { background: none; padding: 0; }
+nav#TOC { background: var(--band); padding: 0.8rem 1.2rem; border-radius: 4px; font-size: 0.9rem; }
+nav#TOC ul { margin: 0.2rem 0; padding-left: 1.2rem; }
+.timebox { color: var(--gray); font-size: 0.85rem; }
+@media print {
+  html { font-size: 11pt; }
+  body { max-width: 100%; padding: 0; }
+  figure { break-inside: avoid; }
+  figure.photo, figure.poster { width: 32%; }
+  h1[id^='附録'] { break-before: page; }
+  pre { font-size: 7.5pt; white-space: pre-wrap; }
+  details { display: block; } details summary { display: none; }
+}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">第10回（5）　日銀APIで日本の金利を取得する</h1>
+<p class="subtitle">系列の検索、JSONから表への変換、短期金利の日次グラフと月平均</p>
+<p class="date">金融論</p>
+</header>
+<h1 id="この資料で作るもの">この資料で作るもの</h1>
+<p>日本銀行のAPIから、2024〜2025年の無担保コールO/N物レートを取得します。日次の折れ線グラフを作り、同じデータから月平均も計算します。</p>
+<p>FREDでは複数の機関が作った統計を取得しました。ここでは、統計を公表する日本銀行から直接取得します。取得後は、pandasで日付と値の表にして、Matplotlibで図を描く流れです。</p>
+<h1 id="日銀apiで取得できるもの">1. 日銀APIで取得できるもの</h1>
+<p><a
+href="https://www.stat-search.boj.or.jp/">日本銀行の時系列統計データ検索サイト</a>では、金利、為替、マネーストック、企業物価、短観、資金循環などを公開しています。APIでも検索サイトの時系列データを取得できます。ユーザー登録やAPIキーは不要です。</p>
+<p>APIは、<a
+href="https://www.boj.or.jp/statistics/outline/notice_2026/not260218a.htm">2026年2月18日に提供が始まりました</a>。取得する系列や期間をURLに付けると、JSONやCSVが返ります。</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>使い方</th>
+<th>API</th>
+<th>指定するもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>系列コードで時系列を取得する</td>
+<td><code>getDataCode</code></td>
+<td>データベース、系列コード、期間</td>
+</tr>
+<tr>
+<td>分類をたどって時系列を取得する</td>
+<td><code>getDataLayer</code></td>
+<td>データベース、分類の階層、期間</td>
+</tr>
+<tr>
+<td>系列名などの属性を調べる</td>
+<td><code>getMetadata</code></td>
+<td>データベース</td>
+</tr>
+</tbody>
+</table>
+<p>この資料では、系列コードが分かっている場合の <code>getDataCode</code>
+を使います。APIの仕様は<a
+href="https://www.stat-search.boj.or.jp/info/api_manual.pdf">公式マニュアル</a>にまとまっています。</p>
+<h1 id="取得する系列を決める">2. 取得する系列を決める</h1>
+<p>無担保コールO/N物レートは、金融機関が無担保で翌日まで資金を貸し借りするときの金利です。この例では、市場で成立した金利の日次平均を使います。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>この例で使う値</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>データベース</td>
+<td><code>FM01</code></td>
+</tr>
+<tr>
+<td>系列コード</td>
+<td><code>STRDCLUCON</code></td>
+</tr>
+<tr>
+<td>系列名</td>
+<td>無担保コールO/N物レート・平均値</td>
+</tr>
+<tr>
+<td>頻度</td>
+<td>日次</td>
+</tr>
+<tr>
+<td>単位</td>
+<td>年率%</td>
+</tr>
+<tr>
+<td>取得期間</td>
+<td>2024年1月〜2025年12月</td>
+</tr>
+</tbody>
+</table>
+<p>別の系列を探すときは、検索サイトの「系列名称検索」で「コールレート」などの言葉を入れます。表示された系列名、頻度、単位、収録期間を見て、目的に合う系列を選びます。検索サイトでは
+<code>FM01'STRDCLUCON</code>
+のようにデータベースと系列コードが一緒に表示されます。APIでは、この2つを別々に指定します。</p>
+<h1 id="urlに取得条件を付ける">3. URLに取得条件を付ける</h1>
+<p>この例の取得先は、次のURLです。ブラウザでも返答を確認できます。</p>
+<pre class="text"><code>https://www.stat-search.boj.or.jp/api/v1/getDataCode?db=FM01&amp;code=STRDCLUCON&amp;startDate=202401&amp;endDate=202512</code></pre>
+<p><code>?</code> の後が取得条件です。<code>db</code>
+はデータベース、<code>code</code> は系列コード、<code>startDate</code>
+と <code>endDate</code> は期間です。条件どうしは <code>&amp;</code>
+でつながっています。日次系列でも、取得期間は <code>202401</code>
+のように年月で指定します。</p>
+<p>Pythonでは、条件を辞書にまとめてURLを作れます。</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> urllib.parse <span class="im">import</span> urlencode</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>params <span class="op">=</span> {</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;db&quot;</span>: <span class="st">&quot;FM01&quot;</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;code&quot;</span>: <span class="st">&quot;STRDCLUCON&quot;</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;startDate&quot;</span>: <span class="st">&quot;202401&quot;</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;endDate&quot;</span>: <span class="st">&quot;202512&quot;</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>url <span class="op">=</span> <span class="st">&quot;https://www.stat-search.boj.or.jp/api/v1/getDataCode?&quot;</span> <span class="op">+</span> urlencode(params)</span></code></pre></div>
+<h1 id="jsonを日付と金利の表にする">4. JSONを日付と金利の表にする</h1>
+<p>返答には、取得結果の状態、系列の情報、日付と値が入っています。保存した返答の冒頭から必要な項目を抜き出すと、次のようになります。</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;STATUS&quot;</span><span class="fu">:</span> <span class="dv">200</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;RESULTSET&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="fu">{</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;SERIES_CODE&quot;</span><span class="fu">:</span> <span class="st">&quot;STRDCLUCON&quot;</span><span class="fu">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;NAME_OF_TIME_SERIES_J&quot;</span><span class="fu">:</span> <span class="st">&quot;無担保コールＯ／Ｎ物レート／平均値 日次／金利&quot;</span><span class="fu">,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;UNIT_J&quot;</span><span class="fu">:</span> <span class="st">&quot;年％&quot;</span><span class="fu">,</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;FREQUENCY&quot;</span><span class="fu">:</span> <span class="st">&quot;DAILY&quot;</span><span class="fu">,</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;VALUES&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;SURVEY_DATES&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="dv">20240101</span><span class="ot">,</span> <span class="dv">20240102</span><span class="ot">,</span> <span class="dv">20240103</span><span class="ot">,</span> <span class="dv">20240104</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;VALUES&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="kw">null</span><span class="ot">,</span> <span class="kw">null</span><span class="ot">,</span> <span class="kw">null</span><span class="ot">,</span> <span class="fl">-0.021</span><span class="ot">]</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span><span class="ot">]</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><code>RESULTSET</code> は系列のリストです。最初の系列は
+<code>[0]</code> で取り出せます。その中の <code>SURVEY_DATES</code> と
+<code>VALUES</code>
+は同じ順番で対応しています。2024年1月4日の金利は−0.021%です。</p>
+<p><a
+href="example/boj/raw/call_rate.json">保存済みの返答</a>を読み込む例です。以下のコードは、作例フォルダを作業場所にして実行します。</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> json.loads(Path(<span class="st">&quot;raw/call_rate.json&quot;</span>).read_text(encoding<span class="op">=</span><span class="st">&quot;utf-8&quot;</span>))</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>series <span class="op">=</span> response[<span class="st">&quot;RESULTSET&quot;</span>][<span class="dv">0</span>]</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>values <span class="op">=</span> series[<span class="st">&quot;VALUES&quot;</span>]</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;date&quot;</span>: pd.to_datetime([<span class="bu">str</span>(date) <span class="cf">for</span> date <span class="kw">in</span> values[<span class="st">&quot;SURVEY_DATES&quot;</span>]], <span class="bu">format</span><span class="op">=</span><span class="st">&quot;%Y%m</span><span class="sc">%d</span><span class="st">&quot;</span>),</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;rate_pct&quot;</span>: values[<span class="st">&quot;VALUES&quot;</span>],</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df.head())</span></code></pre></div>
+<p>JSONの <code>null</code>
+は、数値の列ではpandasの欠損になります。この返答には731暦日が入り、観測値があるのは488日です。元の表では休日などの欠損を残し、作図では観測値のある日を結びます。</p>
+<h1 id="日次のグラフを描く">5. 日次のグラフを描く</h1>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>observed <span class="op">=</span> df.dropna(subset<span class="op">=</span>[<span class="st">&quot;rate_pct&quot;</span>])</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="fl">4.7</span>))</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>ax.plot(observed[<span class="st">&quot;date&quot;</span>], observed[<span class="st">&quot;rate_pct&quot;</span>])</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>ax.axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">&quot;gray&quot;</span>, linewidth<span class="op">=</span><span class="fl">0.8</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>ax.<span class="bu">set</span>(title<span class="op">=</span><span class="st">&quot;Japan: overnight call rate, 2024–2025&quot;</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>       xlabel<span class="op">=</span><span class="st">&quot;Date&quot;</span>, ylabel<span class="op">=</span><span class="st">&quot;Annual rate (%)&quot;</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<figure>
+<img src="example/boj/figures/call_rate.png"
+alt="図1　無担保コールO/N物レートの日次平均。2024〜2025年、年率%。出所：日本銀行。" />
+<figcaption
+aria-hidden="true">図1　無担保コールO/N物レートの日次平均。2024〜2025年、年率%。出所：日本銀行。</figcaption>
+</figure>
+<p>2024年1月4日は−0.021%、2025年12月30日は0.727%です。マイナスの金利からプラスへ移り、段階的に上昇した様子が分かります。両日の差は0.748%ポイントです。金利の水準どうしの差なので、%ポイントで表します。</p>
+<h1 id="同じデータを月平均にする">6. 同じデータを月平均にする</h1>
+<p>日次データを月ごとにまとめると、長い期間の動きを追いやすくなります。各月の観測値の単純平均を計算し、平均に使った日数も残します。</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>monthly <span class="op">=</span> df.set_index(<span class="st">&quot;date&quot;</span>)[<span class="st">&quot;rate_pct&quot;</span>].resample(<span class="st">&quot;MS&quot;</span>).agg([<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;count&quot;</span>])</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>monthly <span class="op">=</span> monthly.rename(columns<span class="op">=</span>{<span class="st">&quot;mean&quot;</span>: <span class="st">&quot;mean_rate_pct&quot;</span>, <span class="st">&quot;count&quot;</span>: <span class="st">&quot;observations&quot;</span>})</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(monthly.head())</span></code></pre></div>
+<p><code>set_index("date")</code>
+は日付を表の索引にします。<code>resample("MS")</code>
+は月ごとにまとめ、各月の初日をラベルにします。<code>mean</code>
+は欠損を除いた平均、<code>count</code>
+は値のある日数です。月平均にしても、金利の単位は年率%のままです。</p>
+<figure>
+<img src="example/boj/figures/call_rate_monthly.png"
+alt="図2　日次平均値から計算した月平均のコールレート。各月の観測値の単純平均。出所：日本銀行。" />
+<figcaption
+aria-hidden="true">図2　日次平均値から計算した月平均のコールレート。各月の観測値の単純平均。出所：日本銀行。</figcaption>
+</figure>
+<h1 id="codexに取得と作図を頼む">7. Codexに取得と作図を頼む</h1>
+<pre class="text"><code>金融論/Lecture10/boj_rate/ に、日銀APIから無担保コールO/N物レートを取得して図にするPythonプログラムを作って。
+getDataCodeを使い、dbはFM01、codeはSTRDCLUCONにして。
+2024年1月から2025年12月までを取得し、系列名・単位・頻度を確認して。
+日付と金利を表にし、休日などのnullは欠損として残して。
+観測値のある日を結んだ日次グラフと、各月の観測値の単純平均を使った月次グラフを作って。
+元のJSON、取得条件と日時、日次と月次のCSV、2枚の図を保存して。
+保存済みの応答があれば、それを使って再実行できるようにして。</code></pre>
+<p><a href="example/boj/boj_example.py">実行できる作例</a>と<a
+href="example/boj/README.md">使い方</a>があります。配布する
+<code>example/boj/</code> の中身を
+<code>金融論/Lecture10/boj_rate/</code>
+に置くと、プログラムとデータがそろいます。プログラムは自分のファイルがある場所を基準に、<code>raw/</code>
+を読み、<code>data/</code> と <code>figures/</code> に保存します。</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="example/boj/data/call_rate.csv">data/call_rate.csv</a></td>
+<td>日付と日次金利</td>
+</tr>
+<tr>
+<td><a
+href="example/boj/data/call_rate_monthly.csv">data/call_rate_monthly.csv</a></td>
+<td>月平均と平均に使った日数</td>
+</tr>
+<tr>
+<td><a href="example/boj/raw/call_rate.json">raw/call_rate.json</a></td>
+<td>APIから返ったJSON</td>
+</tr>
+<tr>
+<td><a href="example/boj/raw/request.json">raw/request.json</a></td>
+<td>取得先・取得条件・取得日時</td>
+</tr>
+<tr>
+<td><a href="example/boj/settings.md">settings.md</a></td>
+<td>系列の情報と計算結果</td>
+</tr>
+</tbody>
+</table>
+<p>図の期間や見た目を変えるときは、保存済みのデータを使えます。</p>
+<pre class="text"><code>APIに再アクセスせず、保存した日銀のデータから2枚の図を作り直して。
+日次データが731行、観測値が488個あることと、月平均が24か月分あることを確認して。</code></pre>
+<h1 id="参照先">参照先</h1>
+<ul>
+<li><a
+href="https://www.stat-search.boj.or.jp/">日本銀行：時系列統計データ検索サイト</a></li>
+<li><a
+href="https://www.stat-search.boj.or.jp/info/nme_aphelp.html">データ検索の手引き</a></li>
+<li><a
+href="https://www.stat-search.boj.or.jp/info/api_manual.pdf">API機能利用マニュアル</a></li>
+<li><a
+href="https://www.boj.or.jp/statistics/outline/notice_2026/not260218a.htm">API機能の提供開始</a></li>
+</ul>
+<p>作例のデータ取得日は2026年11月4日です。APIの説明は2026年11月14日に公式資料で確認しました。</p>
+</body>
+</html>

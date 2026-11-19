@@ -1,0 +1,10 @@
+{
+  "url": "https://www.stat-search.boj.or.jp/api/v1/getDataCode?db=FM01&code=STRDCLUCON&startDate=202401&endDate=202512",
+  "parameters": {
+    "db": "FM01",
+    "code": "STRDCLUCON",
+    "startDate": "202401",
+    "endDate": "202512"
+  },
+  "retrieved_at": "2026-11-04T21:20:09.216044+09:00"
+}

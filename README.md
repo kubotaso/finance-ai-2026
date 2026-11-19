@@ -16,7 +16,7 @@
 | `lecture07` | 第7回 | 株式市場・株価の決まり方とJ-Quants |
 | `lecture08` | 第8回 | J-Quantsで決算を取得し、財務三表を読む |
 | `lecture09` | 第9回 | 決算と株価から企業を比較する：ROE・PER・PBR |
-| `lecture10` | 第10回 | マクロ時系列・FRED・新聞記事検索 |
+| `lecture10` | 第10回 | マクロ時系列・FRED・新聞記事検索・日銀API |
 | `lecture11` | 第11回 | R入門：株価CSVの集計・作図・API接続 |
 
 講義内容は、今後随時更新されます。第2回はon-demand videoの回になります。
